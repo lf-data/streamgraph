@@ -44,7 +44,7 @@ print(chain(2, 3))  # Output: 3.333
 chain.view()
 ```
 
-![chain1](https://raw.githubusercontent.com/lf-data/chain_processor/main/images/chain1.png)
+![chain1](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain1.png)
 
 ### 11. ConditionalNode to check prime number
 
@@ -81,7 +81,7 @@ print(chain(4)) # This number is not prime
 chain.view()
 ```
 
-![chain2](https://raw.githubusercontent.com/lf-data/chain_processor/main/images/chain2.png)
+![chain2](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain2.png)
 
 
 ### 12. Complex chain with nodes repeated several times
@@ -109,7 +109,7 @@ print(chain(1)) # Output: 46
 chain.view()
 ```
 
-![chain3](https://raw.githubusercontent.com/lf-data/chain_processor/main/images/chain3.png)
+![chain3](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain3.png)
 
 
 
