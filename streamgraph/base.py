@@ -125,6 +125,7 @@ class Chain(Base):
                 self.edges += [(z[0], j[0]) for j in x.first_nodes for z in nodes[i-1].last_nodes]
             self.nodes += x.nodes
             self.edges += x.edges
+        self._nodes = nodes
         self.first_nodes = nodes[0].first_nodes
         self.last_nodes = nodes[-1].last_nodes
         self._mg = _create_mermaid(self.edges, self.nodes, self.name)
@@ -153,6 +154,7 @@ class Chain(Base):
                 cls.edges += [(z[0], j[0]) for j in x.first_nodes for z in nodes[i-1].last_nodes]
             cls.nodes += x.nodes
             cls.edges += x.edges
+        cls._nodes = nodes
         cls.first_nodes = nodes[0].first_nodes
         cls.last_nodes = nodes[-1].last_nodes
         cls._mg = _create_mermaid(cls.edges, cls.nodes, cls.name)
