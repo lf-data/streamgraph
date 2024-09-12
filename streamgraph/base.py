@@ -232,7 +232,6 @@ class Layer(Base):
             self.last_nodes += x.last_nodes
             self.nodes += x.nodes
             self.edges += x.edges
-        self._mg = _create_mermaid(self.edges, self.nodes, self.name)
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current instance to avoid modifying the original
@@ -312,7 +311,6 @@ class Node(Base):
         self.edges = []
         self.first_nodes = [(id, self.name)]
         self.last_nodes = [(id, self.name)]
-        self._mg = _create_mermaid(self.edges, self.nodes, self.name)
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current node to avoid modifying the original
@@ -377,7 +375,6 @@ class ConditionalNode(Node):
         true_edges = [(id, x[0], {"label": "True"}) for x in true_node.first_nodes]
         false_edges = [(id, x[0], {"label": "False"}) for x in false_node.first_nodes]
         self.edges = [*true_edges, *false_edges, *true_node.edges, *false_node.edges]
-        self._mg = _create_mermaid(self.edges, self.nodes, self.name)
     
     def __call__(self, *args, **kwargs)-> Any:
         # If the function does not accept positional arguments
