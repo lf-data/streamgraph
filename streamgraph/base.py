@@ -1,4 +1,4 @@
-from .utils import _input_args, _is_positional_or_keyword, _get_args, _id_generator, _create_mermaid
+from .utils import _input_args, _is_positional_or_keyword, _get_args, _create_mermaid
 from typing import Any, Optional, Callable, Union, List, Dict, Tuple
 from functools import lru_cache
 from copy import deepcopy
@@ -9,30 +9,29 @@ import os
 import multiprocessing.pool
 import requests
 import base64
+import uuid
 
 logger = logging.getLogger(__name__)
 
 def _remove_duplicate_node(node: "Base", nodes: list):
     for idx in range(len(node.nodes)):
-        name = node.nodes[idx][0]
-        if name in [xx[0] for xx in nodes]:
-            idxn = 1
-            new_name = name + str(idxn)
-            while new_name in [xx[0] for xx in nodes] or new_name in [yy[0] for yy in node.nodes]:
-                idxn +=1
-                new_name = name + str(idxn)
-            node.nodes[idx] = (new_name, *node.nodes[idx][1:])
+        id = node.nodes[idx][0]
+        if id in [xx[0] for xx in nodes]:
+            new_id = str(uuid.uuid4())
+            while new_id in [xx[0] for xx in nodes] or new_id in [yy[0] for yy in node.nodes]:
+                new_id = str(uuid.uuid4())
+            node.nodes[idx] = (new_id, *node.nodes[idx][1:])
             new_edges = []
             for idxe in range(len(node.edges)):
                 edge = node.edges[idxe]
-                tpl_edges = [new_name if ed == name else ed for ed in [edge[0], edge[1]]]
+                tpl_edges = [new_id if ed == id else ed for ed in [edge[0], edge[1]]]
                 if len(edge) == 3:
                     tpl_edges = tuple(tpl_edges + [edge[2]])
                 new_edges.append(tpl_edges)
             node.edges = new_edges
 
-            node.first_nodes = [(new_name, *sn[1:]) if sn[0] == name else sn for sn in node.first_nodes]
-            node.last_nodes = [(new_name, *sn[1:]) if sn[0] == name else sn for sn in node.last_nodes]
+            node.first_nodes = [(new_id, *sn[1:]) if sn[0] == id else sn for sn in node.first_nodes]
+            node.last_nodes = [(new_id, *sn[1:]) if sn[0] == id else sn for sn in node.last_nodes]
     return node
 
 lru_cache(maxsize=2)
@@ -113,6 +112,7 @@ class Chain(Base):
         # Ensure there are at least two nodes in the chain
         assert len(nodes) > 1, "There must be at least two nodes"
         _check_input_node(nodes)
+        nodes = deepcopy(nodes)
         self._nodes = nodes
         self.name = name
         self.description = description
@@ -182,13 +182,14 @@ class Chain(Base):
         except Exception as e:
             logger.error(e, exc_info=True, extra={"id": self.name})
 
-    def view(self):
+    def view(self, path: Optional[str] = None):
         graphbytes = self._mg.encode("utf8")
         base64_bytes = base64.urlsafe_b64encode(graphbytes)
         base64_string = base64_bytes.decode("ascii")
         response = requests.get("https://mermaid.ink/img/" + base64_string)
         if response.status_code == 200:
-            with open(f'{self.name}.png', 'wb') as file:
+            path_img = f'{self.name}.png' if path is None else path
+            with open(path_img, 'wb') as file:
                 file.write(response.content)
         else:
             print(f"Failed to generate PNG image. Status code: {response.status_code}")
@@ -211,6 +212,7 @@ class Layer(Base):
         # Check if the input nodes are valid
         _check_input_node(nodes)
         # Store the nodes in the layer
+        nodes = deepcopy(nodes)
         self._nodes = nodes
         self.name = name
         self.description = description
@@ -303,13 +305,13 @@ class Node(Base):
             self.name = name
         # Store the function to be executed by the node
         self.func = func
-        self.id = _id_generator(30)
-        self.nodes = [(self.name, self.name)]
+        id = str(uuid.uuid4())
+        self.nodes = [(id, self.name)]
         self.edges = []
-        self.first_nodes = [(self.name, self.name)]
-        self.last_nodes = [(self.name, self.name)]
+        self.first_nodes = [(id, self.name)]
+        self.last_nodes = [(id, self.name)]
         self._mg = _create_mermaid(self.edges, self.nodes, self.name)
-    
+
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current node to avoid modifying the original
         cls = deepcopy(self)
@@ -360,15 +362,18 @@ class ConditionalNode(Node):
                  description: Optional[str] = None, 
                  name: Optional[str] = None):
         super().__init__(func, description, name)
-        true_node = _remove_duplicate_node(true_node, [(self.name, self.name)])
-        false_node = _remove_duplicate_node(false_node, [(self.name, self.name), *false_node.nodes])
+        id = str(uuid.uuid4())
+        true_node = deepcopy(true_node)
+        false_node = deepcopy(false_node)
+        true_node = _remove_duplicate_node(true_node, [(id, self.name)])
+        false_node = _remove_duplicate_node(false_node, [(id, self.name), *false_node.nodes])
         self.true_node = true_node
         self.false_node = false_node
-        self.first_nodes = [(self.name, self.name, {"shape":'diamond'})]
+        self.first_nodes = [(id, self.name, {"shape":'diamond'})]
         self.last_nodes = [*true_node.last_nodes, *false_node.last_nodes]
         self.nodes = self.first_nodes + [*true_node.nodes, *false_node.nodes]
-        true_edges = [(self.name, x[0], {"label": "True"}) for x in true_node.first_nodes]
-        false_edges = [(self.name, x[0], {"label": "False"}) for x in false_node.first_nodes]
+        true_edges = [(id, x[0], {"label": "True"}) for x in true_node.first_nodes]
+        false_edges = [(id, x[0], {"label": "False"}) for x in false_node.first_nodes]
         self.edges = [*true_edges, *false_edges, *true_node.edges, *false_node.edges]
         self._mg = _create_mermaid(self.edges, self.nodes, self.name)
     

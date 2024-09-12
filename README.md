@@ -19,7 +19,6 @@ Install StreamGraph directly from GitHub using pip:
 pip install git+https://github.com/lf-data/streamgraph.git
 ```
 
-
 ## Examples
 
 ### 1. Basic Example with Math Operations

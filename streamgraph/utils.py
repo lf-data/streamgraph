@@ -4,17 +4,17 @@ import string
 from typing import Callable, Tuple, List, Dict, Optional
 
 class MermaidGraph:
-    def __init__(self, direction="TB"):
+    def __init__(self, direction: str ="TB"):
         # Initializes the graph with a direction (default is Top-Bottom)
         self.direction = direction
         self.nodes = {}  # Dictionary to store nodes with their labels and shapes
         self.edges = []  # List to store edges between nodes
     
-    def add_node(self, node_id, label=None, shape=None):
+    def add_node(self, node_id: str, label: Optional[str] = None, shape: Optional[str] = None):
         # Adds a node to the graph with an optional label and shape (e.g., rectangle, diamond)
         self.nodes[node_id] = {"label": label, "shape": shape}
     
-    def add_edge(self, from_node, to_node, label=None):
+    def add_edge(self, from_node: str, to_node: str, label: Optional[str] = None):
         # Adds an edge between two nodes with an optional label
         # Raises an error if one or both of the nodes have not been added
         if from_node not in self.nodes or to_node not in self.nodes:
@@ -82,15 +82,6 @@ def _create_mermaid(edges: list, nodes: list, name: str):
     
     # Generate and return the Mermaid diagram code
     return mg.generate_mermaid_code()
-
-
-
-# Function to generate a random string of a given size
-def _id_generator(str_size) ->str:
-    # Define the characters to use for the string: all ASCII letters
-    chars = string.ascii_letters
-    # Generate a random id by selecting random characters
-    return ''.join(random.choice(chars) for x in range(str_size))
 
 # Function to map input arguments to the node's parameters
 def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
