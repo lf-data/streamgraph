@@ -13,11 +13,12 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
+lru_cache(maxsize=2)
 def _reset_id(nodes: list):
     nodes = [deepcopy(node) for node in nodes]
     for node in nodes:
+        node.id = str(uuid.uuid4())
         if isinstance(node, ConditionalNode):
-            node.id = str(uuid.uuid4())
             node.true_node = deepcopy(node.true_node)
             node.true_node.id = str(uuid.uuid4())
             if hasattr(node.true_node, "_nodes"):
@@ -27,14 +28,11 @@ def _reset_id(nodes: list):
             node.false_node.id = str(uuid.uuid4())
             if hasattr(node.false_node, "_nodes"):
                 node.false_node._nodes = _reset_id(node.false_node._nodes)
-        elif isinstance(node, Node):
-            node.id = str(uuid.uuid4())
         elif isinstance(node, (Chain, Layer)):
-            node.id = str(uuid.uuid4())
             node._nodes = _reset_id(node._nodes)
     return nodes
 
-
+lru_cache(maxsize=2)
 def _create_mermaid(nodes: list):
     lines = []
     first_node = None
@@ -227,19 +225,15 @@ class Chain(Base):
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current instance to avoid modifying the original
-        cls = deepcopy(self)
-        # Check if the input node is valid
         _check_input_node(other)
         # Convert the input node into layer if one is a list, tuple or dict
         other = _convert_parallel_node(other)
-        # Create a deep copy of the input node to avoid modifying the original
-        other = deepcopy(other)
         if before:
-            cls._nodes.insert(0, other)
+            chain = Chain(nodes=[other] + self._nodes)
         else:
-            cls._nodes.append(other)
-        cls._nodes = _reset_id(cls._nodes)
-        return cls
+            chain = Chain(nodes=self._nodes + [other])
+        chain._nodes = _reset_id(chain._nodes)
+        return chain
         
     
     def __call__(self, *args, **kwargs):
@@ -307,19 +301,15 @@ class Layer(Base):
         self.id = str(uuid.uuid4())
 
     def add_node(self, other, before: bool) ->Base:
-        # Create a deep copy of the current instance to avoid modifying the original
-        cls = deepcopy(self)
         # Check if the input node is valid
         _check_input_node(other)
         # Convert the input node into layer if one is a list, tuple or dict
         other = _convert_parallel_node(other)
-        # Create a deep copy of the input node to avoid modifying the original
-        other = deepcopy(other)
         # Insert the node before or after the current layer based on the 'before' flag and create a Chain
         if before:
-            chain = Chain(nodes=[other, cls])
+            chain = Chain(nodes=[other, self])
         else:
-            chain = Chain(nodes=[cls, other])
+            chain = Chain(nodes=[self, other])
         chain._nodes = _reset_id(chain._nodes)
         return chain
     
@@ -383,19 +373,15 @@ class Node(Base):
         self.id = str(uuid.uuid4())
 
     def add_node(self, other, before: bool) ->Base:
-        # Create a deep copy of the current node to avoid modifying the original
-        cls = deepcopy(self)
         # Check if the input node is valid
         _check_input_node(other)
         # Convert the input node into layer if one is a list, tuple or dict
         other = _convert_parallel_node(other)
         # Create a deep copy of the input node to avoid modifying the original
-        other = deepcopy(other)
-        # Insert the node before or after the current node based on the 'before' flag
         if before:
-            chain = Chain(nodes=[other, cls])
+            chain = Chain(nodes=[other, self])
         else:
-            chain = Chain(nodes=[cls, other])
+            chain = Chain(nodes=[self, other])
         chain._nodes = _reset_id(chain._nodes)
         return chain
     
@@ -436,8 +422,14 @@ class ConditionalNode(Node):
         super().__init__(func, description, name)
         true_node = deepcopy(true_node)
         true_node.id = str(uuid.uuid4())
+        if hasattr(true_node, "_nodes"):
+            true_node._nodes = _reset_id(true_node._nodes)
+        
         false_node = deepcopy(false_node)
         false_node.id = str(uuid.uuid4())
+        if hasattr(false_node, "_nodes"):
+            false_node._nodes = _reset_id(false_node._nodes)
+        
         self.true_node = true_node
         self.false_node = false_node
     
