@@ -3,85 +3,12 @@ import random
 import string
 from typing import Callable, Tuple, List, Dict, Optional
 
-class MermaidGraph:
-    def __init__(self, direction: str ="TB"):
-        # Initializes the graph with a direction (default is Top-Bottom)
-        self.direction = direction
-        self.nodes = {}  # Dictionary to store nodes with their labels and shapes
-        self.edges = []  # List to store edges between nodes
-    
-    def add_node(self, node_id: str, label: Optional[str] = None, shape: Optional[str] = None):
-        # Adds a node to the graph with an optional label and shape (e.g., rectangle, diamond)
-        self.nodes[node_id] = {"label": label, "shape": shape}
-    
-    def add_edge(self, from_node: str, to_node: str, label: Optional[str] = None):
-        # Adds an edge between two nodes with an optional label
-        # Raises an error if one or both of the nodes have not been added
-        if from_node not in self.nodes or to_node not in self.nodes:
-            raise ValueError("Both nodes must be added before adding an edge.")
-        self.edges.append((from_node, to_node, label))
-    
-    def generate_mermaid_code(self):
-        # Generates the Mermaid diagram code based on the nodes and edges
-        lines = [f"graph {self.direction};"]
-        
-        # Add nodes with their labels and shapes
-        for node_id, properties in self.nodes.items():
-            label = properties["label"]
-            shape = properties["shape"]
-    
-            if shape == "diamond":
-                # If the shape is diamond, use the appropriate Mermaid syntax
-                lines.append(f"    {node_id}{{{label}}};")
-            else:
-                # Default shape is rectangle
-                lines.append(f"    {node_id}[{label}];")
-        
-        # Add edges between nodes with optional labels
-        for from_node, to_node, label in self.edges:
-            if label:
-                # If the edge has a label, include it
-                lines.append(f"    {from_node} -- {label} --> {to_node};")
-            else:
-                # If the edge doesn't have a label, just connect the nodes
-                lines.append(f"    {from_node} --> {to_node};")
 
-        # Define CSS-like styles for rectangles and diamonds in the Mermaid diagram
-        lines.append("""
-        classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
-        classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
-        """)
+CSS_MERMAID = """
 
-        # Apply the styles to the nodes based on their shape
-        for node_id, properties in self.nodes.items():
-            if properties["shape"] == "diamond":
-                lines.append(f"class {node_id} diamond;")
-            else:
-                lines.append(f"class {node_id} rectangle;")
-
-        # Return the final Mermaid code as a string
-        return "\n".join(lines)
-
-def _create_mermaid(edges: list, nodes: list, name: str):
-    # Helper function to create a Mermaid graph dynamically using nodes and edges
-    mg = MermaidGraph(direction="LR")  # Set the graph direction (e.g., Left-Right)
-    
-    # Add nodes with optional shape properties
-    for x in nodes:
-        if len(x) == 3:
-            mg.add_node(x[0], x[1], shape=x[2]["shape"])
-        else:
-            mg.add_node(x[0], x[1])
-    
-    # Add edges with optional labels
-    for x in edges:
-        if len(x) == 3:
-            mg.add_edge(x[0], x[1], label=x[2]["label"])
-        else:
-            mg.add_edge(x[0], x[1])
-    
-    # Generate and return the Mermaid diagram code
-    return mg.generate_mermaid_code()
+classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
+classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
+"""
 
 # Function to map input arguments to the node's parameters
 def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:

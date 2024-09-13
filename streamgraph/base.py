@@ -1,4 +1,4 @@
-from .utils import _input_args, _is_positional_or_keyword, _get_args, _create_mermaid
+from .utils import _input_args, _is_positional_or_keyword, _get_args, CSS_MERMAID
 from typing import Any, Optional, Callable, Union, List, Dict, Tuple
 from functools import lru_cache
 from copy import deepcopy
@@ -13,26 +13,133 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-def _remove_duplicate_node(node: "Base", nodes: list):
-    for idx in range(len(node.nodes)):
-        id = node.nodes[idx][0]
-        if id in [xx[0] for xx in nodes]:
-            new_id = str(uuid.uuid4())
-            while new_id in [xx[0] for xx in nodes] or new_id in [yy[0] for yy in node.nodes]:
-                new_id = str(uuid.uuid4())
-            node.nodes[idx] = (new_id, *node.nodes[idx][1:])
-            new_edges = []
-            for idxe in range(len(node.edges)):
-                edge = node.edges[idxe]
-                tpl_edges = [new_id if ed == id else ed for ed in [edge[0], edge[1]]]
-                if len(edge) == 3:
-                    tpl_edges = tuple(tpl_edges + [edge[2]])
-                new_edges.append(tpl_edges)
-            node.edges = new_edges
+def _reset_id(nodes: list):
+    nodes = [deepcopy(node) for node in nodes]
+    for node in nodes:
+        if isinstance(node, ConditionalNode):
+            node.id = str(uuid.uuid4())
+            node.true_node = deepcopy(node.true_node)
+            node.true_node.id = str(uuid.uuid4())
+            if hasattr(node.true_node, "_nodes"):
+                node.true_node._nodes = _reset_id(node.true_node._nodes) 
 
-            node.first_nodes = [(new_id, *sn[1:]) if sn[0] == id else sn for sn in node.first_nodes]
-            node.last_nodes = [(new_id, *sn[1:]) if sn[0] == id else sn for sn in node.last_nodes]
-    return node
+            node.false_node = deepcopy(node.false_node)
+            node.false_node.id = str(uuid.uuid4())
+            if hasattr(node.false_node, "_nodes"):
+                node.false_node._nodes = _reset_id(node.false_node._nodes)
+        elif isinstance(node, Node):
+            node.id = str(uuid.uuid4())
+        elif isinstance(node, (Chain, Layer)):
+            node.id = str(uuid.uuid4())
+            node._nodes = _reset_id(node._nodes)
+    return nodes
+
+
+def _create_mermaid(nodes: list):
+    lines = []
+    first_node = None
+    last_node = None
+    for node in nodes:
+        if isinstance(node, Node):
+            if isinstance(node, ConditionalNode):
+                # If the shape is diamond, use the appropriate Mermaid syntax
+                lines.append(f"{node.id}{{{node.name}}}:::diamond;")
+
+                if hasattr(node.true_node ,"_nodes"):
+                    true_nodes = node.true_node._nodes
+                else:
+                    true_nodes = [node.true_node]
+
+                if hasattr(node.false_node ,"_nodes"):
+                    false_nodes = node.false_node._nodes
+                else:
+                    false_nodes = [node.false_node]
+
+                first_node_true, lines_true, last_node_true = _create_mermaid(true_nodes)
+                first_node_false, lines_false, last_node_false = _create_mermaid(false_nodes)
+
+                for x in first_node_true:
+                    lines.append(f"{node.id} -- True --> {x.id};")
+                for y in first_node_false:
+                    lines.append(f"{node.id} -- False --> {y.id};")
+                
+                if isinstance(node.true_node, Chain):
+                    lines.append("subgraph \" \";")
+                    lines += lines_true
+                    lines.append("end;")
+                else:
+                    lines += lines_true
+                
+                if isinstance(node.false_node, Chain):
+                    lines.append("subgraph \" \";")
+                    lines += lines_false
+                    lines.append("end;")
+                else:
+                    lines += lines_false
+                
+                if last_node is not None:
+                    for x in last_node:
+                        lines.append(f"{x.id} --> {node.id};")
+                
+                if first_node is None:
+                    first_node = [node]
+                
+                last_node = last_node_false + last_node_true
+            else:
+                lines.append(f"{node.id}[{node.name}]:::rectangle;")
+
+                if first_node is None:
+                    first_node = [node]
+                
+                if last_node is not None:
+                    for x in last_node:
+                        lines.append(f"{x.id} --> {node.id};")
+                last_node = [node]
+        elif isinstance(node, Layer):
+            list_layer = []
+            for x in node._nodes:
+                if hasattr(x ,"_nodes"):
+                    list_layer.append(_create_mermaid(x._nodes))
+                else:
+                    list_layer.append(_create_mermaid([x]))
+
+            for i in range(len(node._nodes)):
+                if isinstance(node._nodes[i], Chain):
+                    lines.append("subgraph \" \";")
+                    lines += list_layer[i][1]
+                    lines.append("end;")
+                else:
+                    lines += list_layer[i][1]
+                
+            if first_node is None:
+                first_node = [y for x in list_layer for y in x[0]]
+            
+            if last_node is not None:
+                for x in last_node:
+                    for j in [y for f in list_layer for y in f[0]]:
+                        lines.append(f"{x.id} --> {j.id};")
+            
+            last_node = [y for f in list_layer for y in f[2]]
+        elif isinstance(node, Chain):
+            chain_first_node, chain_line, chain_last_node = _create_mermaid(node._nodes)
+
+            lines.append("subgraph \" \";")
+            lines += chain_line
+            lines.append("end;")
+
+            if first_node is None:
+                first_node = chain_first_node
+            
+            if last_node is not None:
+                for x in last_node:
+                    for y in chain_first_node:
+                        lines.append(f"{x.id} --> {y.id};")
+
+            last_node = chain_last_node
+
+    return first_node, lines, last_node
+        
+
 
 lru_cache(maxsize=2)
 def _check_input_node(inputs) ->None:
@@ -112,23 +219,11 @@ class Chain(Base):
         # Ensure there are at least two nodes in the chain
         assert len(nodes) > 1, "There must be at least two nodes"
         _check_input_node(nodes)
-        nodes = deepcopy(nodes)
+        nodes = _reset_id(nodes)
         self._nodes = nodes
         self.name = name
         self.description = description
-        self.nodes = []
-        self.edges = []
-        for i in range(len(nodes)):
-            nodes[i] = _remove_duplicate_node(nodes[i], self.nodes)
-            x = nodes[i]
-            if i > 0:
-                self.edges += [(z[0], j[0]) for j in x.first_nodes for z in nodes[i-1].last_nodes]
-            self.nodes += x.nodes
-            self.edges += x.edges
-        self._nodes = nodes
-        self.first_nodes = nodes[0].first_nodes
-        self.last_nodes = nodes[-1].last_nodes
-        self._mg = _create_mermaid(self.edges, self.nodes, self.name)
+        self.id = str(uuid.uuid4())
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current instance to avoid modifying the original
@@ -139,26 +234,13 @@ class Chain(Base):
         other = _convert_parallel_node(other)
         # Create a deep copy of the input node to avoid modifying the original
         other = deepcopy(other)
-        # Insert the node at the beginning if 'before' is True, otherwise append it at the end
         if before:
             cls._nodes.insert(0, other)
         else:
             cls._nodes.append(other)
-        nodes = cls._nodes
-        cls.nodes = []
-        cls.edges = []
-        for i in range(len(nodes)):
-            nodes[i] = _remove_duplicate_node(nodes[i], cls.nodes)
-            x = nodes[i]
-            if i > 0:
-                cls.edges += [(z[0], j[0]) for j in x.first_nodes for z in nodes[i-1].last_nodes]
-            cls.nodes += x.nodes
-            cls.edges += x.edges
-        cls._nodes = nodes
-        cls.first_nodes = nodes[0].first_nodes
-        cls.last_nodes = nodes[-1].last_nodes
-        cls._mg = _create_mermaid(cls.edges, cls.nodes, cls.name)
+        cls._nodes = _reset_id(cls._nodes)
         return cls
+        
     
     def __call__(self, *args, **kwargs):
         try:
@@ -184,8 +266,10 @@ class Chain(Base):
         except Exception as e:
             logger.error(e, exc_info=True, extra={"id": self.name})
 
-    def view(self, path: Optional[str] = None):
-        graphbytes = self._mg.encode("utf8")
+    def view(self, direction: str = "TB", path: Optional[str] = None):
+        mg = "\n".join(_create_mermaid(self._nodes)[1])
+        mg = f"flowchart {direction};\n" + mg + CSS_MERMAID
+        graphbytes = mg.encode("utf8")
         base64_bytes = base64.urlsafe_b64encode(graphbytes)
         base64_string = base64_bytes.decode("ascii")
         response = requests.get("https://mermaid.ink/img/" + base64_string)
@@ -198,7 +282,7 @@ class Chain(Base):
     
     def __repr__(self) -> str:
         json_repr = json.dumps({
-            "nodes": [x[1] for x in self.nodes],
+            "id": self.id,
             "name": self.name,
             "description": self.description 
         })
@@ -207,31 +291,20 @@ class Chain(Base):
 
 class Layer(Base):
     def __init__(self, nodes: Union[List[Base], Tuple[Base], Dict[str, Base]], 
-                 name: str = "Chain", 
+                 name: str = "Layer", 
                  description: Optional[str] = None):
         # Ensure that there are no nested layers within this layer
         assert len([node for node in nodes if isinstance(node, Layer)]) == 0, "Layers cannot contain other Layers"
         # Check if the input nodes are valid
         _check_input_node(nodes)
         # Store the nodes in the layer
-        nodes = deepcopy(nodes)
+        nodes = _reset_id(nodes)
         self._nodes = nodes
         self.name = name
         self.description = description
         # Determine if the nodes are stored in a dictionary
         self._is_dict = True if isinstance(nodes, dict) else False
-        if self._is_dict:
-            nodes = list(nodes.values())
-        self.nodes = []
-        self.edges = []
-        self.first_nodes = []
-        self.last_nodes = []
-        for x in nodes:
-            x = _remove_duplicate_node(x, self.nodes)
-            self.first_nodes += x.first_nodes
-            self.last_nodes += x.last_nodes
-            self.nodes += x.nodes
-            self.edges += x.edges
+        self.id = str(uuid.uuid4())
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current instance to avoid modifying the original
@@ -247,6 +320,7 @@ class Layer(Base):
             chain = Chain(nodes=[other, cls])
         else:
             chain = Chain(nodes=[cls, other])
+        chain._nodes = _reset_id(chain._nodes)
         return chain
     
     def __call__(self, *args, **kwargs)->Any:
@@ -278,7 +352,7 @@ class Layer(Base):
     
     def __repr__(self) -> str:
         json_repr = json.dumps({
-            "nodes": [x[1] for x in self.nodes],
+            "id": self.id,
             "name": self.name,
             "description": self.description 
         })
@@ -306,11 +380,7 @@ class Node(Base):
             self.name = name
         # Store the function to be executed by the node
         self.func = func
-        id = str(uuid.uuid4())
-        self.nodes = [(id, self.name)]
-        self.edges = []
-        self.first_nodes = [(id, self.name)]
-        self.last_nodes = [(id, self.name)]
+        self.id = str(uuid.uuid4())
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current node to avoid modifying the original
@@ -326,6 +396,7 @@ class Node(Base):
             chain = Chain(nodes=[other, cls])
         else:
             chain = Chain(nodes=[cls, other])
+        chain._nodes = _reset_id(chain._nodes)
         return chain
     
     def __call__(self, *args, **kwargs)-> Any:
@@ -348,6 +419,7 @@ class Node(Base):
     
     def __repr__(self) ->str:
         json_repr = json.dumps({
+            "id": self.id,
             "args": self.args,
             "name": self.name,
             "description": self.description 
@@ -362,19 +434,12 @@ class ConditionalNode(Node):
                  description: Optional[str] = None, 
                  name: Optional[str] = None):
         super().__init__(func, description, name)
-        id = str(uuid.uuid4())
         true_node = deepcopy(true_node)
+        true_node.id = str(uuid.uuid4())
         false_node = deepcopy(false_node)
-        true_node = _remove_duplicate_node(true_node, [(id, self.name)])
-        false_node = _remove_duplicate_node(false_node, [(id, self.name), *false_node.nodes])
+        false_node.id = str(uuid.uuid4())
         self.true_node = true_node
         self.false_node = false_node
-        self.first_nodes = [(id, self.name, {"shape":'diamond'})]
-        self.last_nodes = [*true_node.last_nodes, *false_node.last_nodes]
-        self.nodes = self.first_nodes + [*true_node.nodes, *false_node.nodes]
-        true_edges = [(id, x[0], {"label": "True"}) for x in true_node.first_nodes]
-        false_edges = [(id, x[0], {"label": "False"}) for x in false_node.first_nodes]
-        self.edges = [*true_edges, *false_edges, *true_node.edges, *false_node.edges]
     
     def __call__(self, *args, **kwargs)-> Any:
         # If the function does not accept positional arguments
@@ -402,8 +467,8 @@ class ConditionalNode(Node):
         
     def __repr__(self) ->str:
         json_repr = json.dumps({
+            "id": self.id,
             "args": self.args,
-            "nodes": [x[1] for x in self.nodes],
             "name": self.name,
             "description": self.description 
         })
