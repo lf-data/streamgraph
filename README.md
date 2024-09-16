@@ -26,15 +26,15 @@ pip install git+https://github.com/lf-data/streamgraph.git
 ```python
 from streamgraph import node
 
-@node(description="Add two numbers")
+@node()
 def add(a, b):
     return a + b
 
-@node(description="Divide two numbers")
+@node()
 def divide(a, b):
     return a/b
 
-@node(description="Multiply two numbers")
+@node()
 def multiply(a, b):
     return a * b
 
@@ -50,7 +50,7 @@ chain.view()
 ```python
 from streamgraph import node
 
-@node(description="This node checks if a number is prime", name="PrimeCheckNode")
+@node()
 def give_prime_num(n):
     if n <= 3:
         return n > 1
@@ -63,15 +63,15 @@ def give_prime_num(n):
         i += 6
     return True
 
-@node(description="Output if number is prime", name="PrimeNumber")
+@node()
 def is_prime():
     return "This number is prime"
 
-@node(description="Output if number is not prime", name="NotPrimeNumber")
+@node()
 def is_not_prime():
     return "This number is not prime"
 
-@node(conditional=True, true_node=is_prime, false_node=is_not_prime, description="check if is prime", name="CheckPrime")
+@node(conditional=True, true_node=is_prime, false_node=is_not_prime)
 def check_prime(prime):
     return prime
 
@@ -88,15 +88,15 @@ chain.view()
 ```python
 from streamgraph import node
 
-@node(description="This node adds one to the input number", name="PlusOneNode")
+@node()
 def plus_one(num: int):
     return num + 1
 
-@node(description="This node adds two to the input number", name="PlusTwoNode")
+@node()
 def plus_two(num: int):
     return num + 2
 
-@node(description="This node sums all input numbers", name="SumAllNode")
+@node()
 def sum_all(*args):
     print("Ciao")
     return sum(args)
