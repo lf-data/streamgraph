@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module streamgraph.base</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title"><a href="streamgraph.html" class="white">streamgraph</a>.base</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cfranc%5Cdocuments%5Cstreamgraph%5Cstreamgraph%5Cbase.py">c:\users\franc\documents\streamgraph\streamgraph\base.py</a></td></tr></table>
+    <p></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="base64.html">base64</a><br>
+<a href="json.html">json</a><br>
+</td><td class="multicolumn"><a href="logging.html">logging</a><br>
+<a href="multiprocessing.html">multiprocessing</a><br>
+</td><td class="multicolumn"><a href="os.html">os</a><br>
+<a href="requests.html">requests</a><br>
+</td><td class="multicolumn"><a href="uuid.html">uuid</a><br>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="builtins.html#object">builtins.object</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="streamgraph.base.html#Base">Base</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="streamgraph.base.html#Chain">Chain</a>
+</dt><dt class="heading-text"><a href="streamgraph.base.html#Layer">Layer</a>
+</dt><dt class="heading-text"><a href="streamgraph.base.html#Node">Node</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="streamgraph.base.html#ConditionalNode">ConditionalNode</a>
+</dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="Base">class <strong>Base</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Base">Base</a>&nbsp;class&nbsp;for&nbsp;creating&nbsp;nodes&nbsp;in&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;serves&nbsp;as&nbsp;an&nbsp;abstract&nbsp;base&nbsp;for&nbsp;nodes&nbsp;that&nbsp;can&nbsp;be&nbsp;added&nbsp;to&nbsp;a&nbsp;chain.<br>
+It&nbsp;provides&nbsp;methods&nbsp;for&nbsp;adding&nbsp;nodes&nbsp;to&nbsp;the&nbsp;chain&nbsp;in&nbsp;different&nbsp;positions,&nbsp;<br>
+but&nbsp;the&nbsp;actual&nbsp;implementation&nbsp;of&nbsp;adding&nbsp;a&nbsp;node&nbsp;must&nbsp;be&nbsp;provided&nbsp;by&nbsp;subclasses.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Methods defined here:<br>
+<dl><dt><a name="Base-__lshift__"><strong>__lshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Base-__rlshift__"><strong>__rlshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Base-__rrshift__"><strong>__rrshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Base-__rshift__"><strong>__rshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Base-add_node"><strong>add_node</strong></a>(self, *args, **kwargs) -&gt; 'Base'</dt><dd><span class="code">Add&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;should&nbsp;be&nbsp;implemented&nbsp;by&nbsp;subclasses&nbsp;to&nbsp;define&nbsp;how&nbsp;nodes&nbsp;are&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*args:&nbsp;Positional&nbsp;arguments&nbsp;for&nbsp;adding&nbsp;the&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**kwargs:&nbsp;Keyword&nbsp;arguments&nbsp;for&nbsp;adding&nbsp;the&nbsp;node.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;NotImplementedError:&nbsp;If&nbsp;the&nbsp;method&nbsp;is&nbsp;not&nbsp;implemented&nbsp;by&nbsp;a&nbsp;subclass.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;The&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;added&nbsp;node.</span></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table> <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="Chain">class <strong>Chain</strong></a>(<a href="streamgraph.base.html#Base">Base</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Chain">Chain</a>(nodes:&nbsp;List[streamgraph.base.<a href="#Base">Base</a>],&nbsp;name:&nbsp;Optional[str]&nbsp;=&nbsp;None)&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;representing&nbsp;a&nbsp;chain&nbsp;of&nbsp;nodes,&nbsp;which&nbsp;are&nbsp;instances&nbsp;of&nbsp;the&nbsp;`<a href="#Base">Base</a>`&nbsp;class.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;allows&nbsp;for&nbsp;the&nbsp;creation&nbsp;and&nbsp;manipulation&nbsp;of&nbsp;a&nbsp;sequence&nbsp;of&nbsp;nodes,&nbsp;<br>
+facilitating&nbsp;operations&nbsp;like&nbsp;adding&nbsp;new&nbsp;nodes,&nbsp;chaining&nbsp;the&nbsp;nodes&nbsp;together,&nbsp;and<br>
+generating&nbsp;visual&nbsp;representations&nbsp;of&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_nodes&nbsp;(List[<a href="#Base">Base</a>]):&nbsp;A&nbsp;list&nbsp;of&nbsp;nodes&nbsp;in&nbsp;the&nbsp;chain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;(str):&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;chain.&nbsp;Automatically&nbsp;generated&nbsp;if&nbsp;not&nbsp;provided.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;(str):&nbsp;A&nbsp;unique&nbsp;identifier&nbsp;for&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Methods:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain-__init__">__init__</a>(nodes,&nbsp;name=None):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Initializes&nbsp;a&nbsp;<a href="#Chain">Chain</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;list&nbsp;of&nbsp;nodes&nbsp;and&nbsp;an&nbsp;optional&nbsp;name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain-__or__">__or__</a>(other):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;chain&nbsp;using&nbsp;a&nbsp;string&nbsp;and&nbsp;returns&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;chain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain-add_node">add_node</a>(other,&nbsp;before):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain,&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;existing&nbsp;nodes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain-__call__">__call__</a>(*args,&nbsp;**kwargs):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes&nbsp;the&nbsp;chain&nbsp;by&nbsp;sequentially&nbsp;calling&nbsp;each&nbsp;node&nbsp;with&nbsp;the&nbsp;provided&nbsp;arguments.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain-view">view</a>(direction='TB',&nbsp;path=None):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Generates&nbsp;a&nbsp;visual&nbsp;representation&nbsp;of&nbsp;the&nbsp;chain&nbsp;using&nbsp;Mermaid&nbsp;and&nbsp;saves&nbsp;it&nbsp;as&nbsp;a&nbsp;PNG&nbsp;image.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain-__repr__">__repr__</a>():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;chain,&nbsp;including&nbsp;its&nbsp;ID&nbsp;and&nbsp;name.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt>Method resolution order:</dt>
+<dd><a href="streamgraph.base.html#Chain">Chain</a></dd>
+<dd><a href="streamgraph.base.html#Base">Base</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Chain-__call__"><strong>__call__</strong></a>(self, *args, **kwargs)</dt><dd><span class="code">Executes&nbsp;the&nbsp;chain&nbsp;by&nbsp;sequentially&nbsp;calling&nbsp;each&nbsp;node&nbsp;with&nbsp;the&nbsp;provided&nbsp;arguments.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*args:&nbsp;Positional&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;the&nbsp;first&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**kwargs:&nbsp;Keyword&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;the&nbsp;first&nbsp;node.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Any:&nbsp;The&nbsp;output&nbsp;of&nbsp;the&nbsp;last&nbsp;node&nbsp;in&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Exception:&nbsp;If&nbsp;an&nbsp;error&nbsp;occurs&nbsp;during&nbsp;the&nbsp;execution&nbsp;of&nbsp;any&nbsp;node&nbsp;in&nbsp;the&nbsp;chain.</span></dd></dl>
+
+<dl><dt><a name="Chain-__init__"><strong>__init__</strong></a>(self, nodes: List[streamgraph.base.Base], name: Optional[str] = None) -&gt; None</dt><dd><span class="code">Initializes&nbsp;a&nbsp;<a href="#Chain">Chain</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;list&nbsp;of&nbsp;nodes&nbsp;and&nbsp;an&nbsp;optional&nbsp;name.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nodes&nbsp;(List[<a href="#Base">Base</a>]):&nbsp;A&nbsp;list&nbsp;of&nbsp;nodes&nbsp;to&nbsp;be&nbsp;included&nbsp;in&nbsp;the&nbsp;chain.&nbsp;Must&nbsp;contain&nbsp;at&nbsp;least&nbsp;two&nbsp;nodes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;(Optional[str]):&nbsp;An&nbsp;optional&nbsp;name&nbsp;for&nbsp;the&nbsp;chain.&nbsp;If&nbsp;not&nbsp;provided,&nbsp;a&nbsp;name&nbsp;will&nbsp;be&nbsp;generated.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;AssertionError:&nbsp;If&nbsp;the&nbsp;number&nbsp;of&nbsp;nodes&nbsp;is&nbsp;less&nbsp;than&nbsp;two.</span></dd></dl>
+
+<dl><dt><a name="Chain-__or__"><strong>__or__</strong></a>(self, other)</dt><dd><span class="code">Sets&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;chain&nbsp;using&nbsp;a&nbsp;string&nbsp;and&nbsp;returns&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(str):&nbsp;The&nbsp;new&nbsp;name&nbsp;for&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Chain">Chain</a>:&nbsp;A&nbsp;deep&nbsp;copy&nbsp;of&nbsp;the&nbsp;chain&nbsp;with&nbsp;the&nbsp;updated&nbsp;name.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;provided&nbsp;name&nbsp;is&nbsp;not&nbsp;a&nbsp;string.</span></dd></dl>
+
+<dl><dt><a name="Chain-__repr__"><strong>__repr__</strong></a>(self) -&gt; str</dt><dd><span class="code">Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;chain,&nbsp;including&nbsp;its&nbsp;ID&nbsp;and&nbsp;name.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str:&nbsp;A&nbsp;JSON&nbsp;string&nbsp;representing&nbsp;the&nbsp;chain's&nbsp;ID&nbsp;and&nbsp;name.</span></dd></dl>
+
+<dl><dt><a name="Chain-add_node"><strong>add_node</strong></a>(self, other, before: bool) -&gt; streamgraph.base.Base</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain,&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;existing&nbsp;nodes.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;before&nbsp;(bool):&nbsp;If&nbsp;True,&nbsp;the&nbsp;node&nbsp;is&nbsp;added&nbsp;before&nbsp;the&nbsp;existing&nbsp;nodes.&nbsp;Otherwise,&nbsp;it&nbsp;is&nbsp;added&nbsp;after.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;instance&nbsp;with&nbsp;the&nbsp;added&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Chain-view"><strong>view</strong></a>(self, direction: str = 'TB', path: Optional[str] = None)</dt><dd><span class="code">Generates&nbsp;a&nbsp;visual&nbsp;representation&nbsp;of&nbsp;the&nbsp;chain&nbsp;using&nbsp;Mermaid&nbsp;and&nbsp;saves&nbsp;it&nbsp;as&nbsp;a&nbsp;PNG&nbsp;image.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;direction&nbsp;(str):&nbsp;The&nbsp;direction&nbsp;of&nbsp;the&nbsp;flowchart&nbsp;('TB'&nbsp;for&nbsp;top-bottom,&nbsp;'LR'&nbsp;for&nbsp;left-right).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;path&nbsp;(Optional[str]):&nbsp;The&nbsp;file&nbsp;path&nbsp;where&nbsp;the&nbsp;PNG&nbsp;image&nbsp;will&nbsp;be&nbsp;saved.&nbsp;If&nbsp;None,&nbsp;it&nbsp;uses&nbsp;the&nbsp;chain's&nbsp;name.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Exception:&nbsp;If&nbsp;the&nbsp;image&nbsp;generation&nbsp;fails.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><a name="Chain-__lshift__"><strong>__lshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Chain-__rlshift__"><strong>__rlshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Chain-__rrshift__"><strong>__rrshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Chain-__rshift__"><strong>__rshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table> <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="ConditionalNode">class <strong>ConditionalNode</strong></a>(<a href="streamgraph.base.html#Node">Node</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#ConditionalNode">ConditionalNode</a>(func:&nbsp;Callable,&nbsp;true_node:&nbsp;streamgraph.base.<a href="#Base">Base</a>,&nbsp;false_node:&nbsp;streamgraph.base.<a href="#Base">Base</a>)<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;representing&nbsp;a&nbsp;conditional&nbsp;node&nbsp;in&nbsp;a&nbsp;chain,&nbsp;which&nbsp;executes&nbsp;one&nbsp;of&nbsp;two&nbsp;nodes&nbsp;based&nbsp;on&nbsp;a&nbsp;boolean&nbsp;condition.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;extends&nbsp;the&nbsp;`<a href="#Node">Node</a>`&nbsp;class&nbsp;to&nbsp;include&nbsp;conditional&nbsp;logic.&nbsp;It&nbsp;allows&nbsp;for&nbsp;branching&nbsp;in&nbsp;a&nbsp;chain&nbsp;by&nbsp;<br>
+executing&nbsp;either&nbsp;a&nbsp;`true_node`&nbsp;or&nbsp;a&nbsp;`false_node`&nbsp;depending&nbsp;on&nbsp;the&nbsp;boolean&nbsp;result&nbsp;of&nbsp;the&nbsp;function.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;true_node&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;execute&nbsp;if&nbsp;the&nbsp;condition&nbsp;evaluates&nbsp;to&nbsp;True.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;false_node&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;execute&nbsp;if&nbsp;the&nbsp;condition&nbsp;evaluates&nbsp;to&nbsp;False.<br>
+&nbsp;<br>
+Methods:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#ConditionalNode-__init__">__init__</a>(func,&nbsp;true_node,&nbsp;false_node):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Initializes&nbsp;a&nbsp;<a href="#ConditionalNode">ConditionalNode</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;callable&nbsp;function&nbsp;and&nbsp;two&nbsp;possible&nbsp;nodes&nbsp;for&nbsp;execution.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#ConditionalNode-__call__">__call__</a>(*args,&nbsp;**kwargs):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes&nbsp;the&nbsp;conditional&nbsp;logic&nbsp;by&nbsp;evaluating&nbsp;the&nbsp;function&nbsp;and&nbsp;executing&nbsp;the&nbsp;appropriate&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#ConditionalNode-__repr__">__repr__</a>():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;conditional&nbsp;node,&nbsp;including&nbsp;its&nbsp;ID,&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt>Method resolution order:</dt>
+<dd><a href="streamgraph.base.html#ConditionalNode">ConditionalNode</a></dd>
+<dd><a href="streamgraph.base.html#Node">Node</a></dd>
+<dd><a href="streamgraph.base.html#Base">Base</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="ConditionalNode-__call__"><strong>__call__</strong></a>(self, *args, **kwargs) -&gt; Any</dt><dd><span class="code">Executes&nbsp;the&nbsp;conditional&nbsp;logic&nbsp;by&nbsp;evaluating&nbsp;the&nbsp;function&nbsp;and&nbsp;executing&nbsp;the&nbsp;appropriate&nbsp;node.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*args:&nbsp;Positional&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;the&nbsp;function&nbsp;and&nbsp;nodes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**kwargs:&nbsp;Keyword&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;the&nbsp;function&nbsp;and&nbsp;nodes.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Any:&nbsp;The&nbsp;result&nbsp;of&nbsp;executing&nbsp;either&nbsp;the&nbsp;true_node&nbsp;or&nbsp;the&nbsp;false_node&nbsp;based&nbsp;on&nbsp;the&nbsp;function's&nbsp;boolean&nbsp;result.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;AssertionError:&nbsp;If&nbsp;the&nbsp;function's&nbsp;output&nbsp;is&nbsp;not&nbsp;a&nbsp;boolean.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Exception:&nbsp;If&nbsp;an&nbsp;error&nbsp;occurs&nbsp;during&nbsp;the&nbsp;execution&nbsp;of&nbsp;the&nbsp;function&nbsp;or&nbsp;nodes.</span></dd></dl>
+
+<dl><dt><a name="ConditionalNode-__init__"><strong>__init__</strong></a>(self, func: Callable, true_node: streamgraph.base.Base, false_node: streamgraph.base.Base)</dt><dd><span class="code">Initializes&nbsp;a&nbsp;<a href="#ConditionalNode">ConditionalNode</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;callable&nbsp;function&nbsp;and&nbsp;two&nbsp;possible&nbsp;nodes&nbsp;for&nbsp;execution.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;func&nbsp;(Callable):&nbsp;The&nbsp;function&nbsp;that&nbsp;determines&nbsp;the&nbsp;condition&nbsp;for&nbsp;branching.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;true_node&nbsp;(Union[<a href="#Base">Base</a>]):&nbsp;The&nbsp;node&nbsp;to&nbsp;execute&nbsp;if&nbsp;the&nbsp;function's&nbsp;result&nbsp;is&nbsp;True.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;false_node&nbsp;(Union[<a href="#Base">Base</a>]):&nbsp;The&nbsp;node&nbsp;to&nbsp;execute&nbsp;if&nbsp;the&nbsp;function's&nbsp;result&nbsp;is&nbsp;False.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;true_node&nbsp;(<a href="#Base">Base</a>):&nbsp;A&nbsp;deep&nbsp;copy&nbsp;of&nbsp;the&nbsp;true_node&nbsp;with&nbsp;a&nbsp;new&nbsp;unique&nbsp;ID.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;false_node&nbsp;(<a href="#Base">Base</a>):&nbsp;A&nbsp;deep&nbsp;copy&nbsp;of&nbsp;the&nbsp;false_node&nbsp;with&nbsp;a&nbsp;new&nbsp;unique&nbsp;ID.</span></dd></dl>
+
+<dl><dt><a name="ConditionalNode-__repr__"><strong>__repr__</strong></a>(self) -&gt; str</dt><dd><span class="code">Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;conditional&nbsp;node,&nbsp;including&nbsp;its&nbsp;ID,&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str:&nbsp;A&nbsp;JSON&nbsp;string&nbsp;representing&nbsp;the&nbsp;node's&nbsp;ID,&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="streamgraph.base.html#Node">Node</a>:<br>
+<dl><dt><a name="ConditionalNode-add_node"><strong>add_node</strong></a>(self, other, before: bool) -&gt; streamgraph.base.Base</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain,&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;current&nbsp;node.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;before&nbsp;(bool):&nbsp;If&nbsp;True,&nbsp;the&nbsp;node&nbsp;is&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.&nbsp;Otherwise,&nbsp;it&nbsp;is&nbsp;added&nbsp;after.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;instance&nbsp;with&nbsp;the&nbsp;added&nbsp;node.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><a name="ConditionalNode-__lshift__"><strong>__lshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="ConditionalNode-__rlshift__"><strong>__rlshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="ConditionalNode-__rrshift__"><strong>__rrshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="ConditionalNode-__rshift__"><strong>__rshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table> <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="Layer">class <strong>Layer</strong></a>(<a href="streamgraph.base.html#Base">Base</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Layer">Layer</a>(nodes:&nbsp;Union[List[streamgraph.base.<a href="#Base">Base</a>],&nbsp;Tuple[streamgraph.base.<a href="#Base">Base</a>],&nbsp;Dict[str,&nbsp;streamgraph.base.<a href="#Base">Base</a>]],&nbsp;name:&nbsp;Optional[str]&nbsp;=&nbsp;None)&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;representing&nbsp;a&nbsp;layer&nbsp;of&nbsp;nodes,&nbsp;which&nbsp;can&nbsp;be&nbsp;either&nbsp;a&nbsp;list,&nbsp;tuple,&nbsp;or&nbsp;dictionary&nbsp;of&nbsp;`<a href="#Base">Base</a>`&nbsp;instances.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;allows&nbsp;for&nbsp;grouping&nbsp;multiple&nbsp;nodes&nbsp;into&nbsp;a&nbsp;single&nbsp;layer&nbsp;that&nbsp;can&nbsp;be&nbsp;added&nbsp;to&nbsp;a&nbsp;chain.<br>
+It&nbsp;supports&nbsp;parallel&nbsp;execution&nbsp;of&nbsp;its&nbsp;nodes&nbsp;and&nbsp;can&nbsp;be&nbsp;added&nbsp;to&nbsp;other&nbsp;chains&nbsp;or&nbsp;layers.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_nodes&nbsp;(Union[List[<a href="#Base">Base</a>],&nbsp;Tuple[<a href="#Base">Base</a>],&nbsp;Dict[str,&nbsp;<a href="#Base">Base</a>]]):&nbsp;The&nbsp;nodes&nbsp;within&nbsp;the&nbsp;layer.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;(str):&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;layer.&nbsp;Automatically&nbsp;generated&nbsp;if&nbsp;not&nbsp;provided.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_is_dict&nbsp;(bool):&nbsp;Indicates&nbsp;if&nbsp;the&nbsp;nodes&nbsp;are&nbsp;stored&nbsp;in&nbsp;a&nbsp;dictionary.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;(str):&nbsp;A&nbsp;unique&nbsp;identifier&nbsp;for&nbsp;the&nbsp;layer.<br>
+&nbsp;<br>
+Methods:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Layer-__init__">__init__</a>(nodes,&nbsp;name=None):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Initializes&nbsp;a&nbsp;<a href="#Layer">Layer</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;list,&nbsp;tuple,&nbsp;or&nbsp;dictionary&nbsp;of&nbsp;nodes&nbsp;and&nbsp;an&nbsp;optional&nbsp;name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Layer-add_node">add_node</a>(other,&nbsp;before):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;current&nbsp;layer.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Layer-__call__">__call__</a>(*args,&nbsp;**kwargs):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes&nbsp;the&nbsp;layer&nbsp;by&nbsp;running&nbsp;its&nbsp;nodes&nbsp;in&nbsp;parallel&nbsp;with&nbsp;the&nbsp;provided&nbsp;arguments.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Layer-__repr__">__repr__</a>():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;layer,&nbsp;including&nbsp;its&nbsp;ID&nbsp;and&nbsp;name.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt>Method resolution order:</dt>
+<dd><a href="streamgraph.base.html#Layer">Layer</a></dd>
+<dd><a href="streamgraph.base.html#Base">Base</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Layer-__call__"><strong>__call__</strong></a>(self, *args, **kwargs) -&gt; Any</dt><dd><span class="code">Executes&nbsp;the&nbsp;layer&nbsp;by&nbsp;running&nbsp;its&nbsp;nodes&nbsp;in&nbsp;parallel&nbsp;with&nbsp;the&nbsp;provided&nbsp;arguments.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*args:&nbsp;Positional&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;each&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**kwargs:&nbsp;Keyword&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;each&nbsp;node.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Any:&nbsp;A&nbsp;dictionary&nbsp;or&nbsp;list&nbsp;of&nbsp;the&nbsp;outputs&nbsp;from&nbsp;each&nbsp;node&nbsp;in&nbsp;the&nbsp;layer,&nbsp;depending&nbsp;on&nbsp;how&nbsp;nodes&nbsp;are&nbsp;stored.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Exception:&nbsp;If&nbsp;an&nbsp;error&nbsp;occurs&nbsp;during&nbsp;the&nbsp;execution&nbsp;of&nbsp;any&nbsp;node&nbsp;in&nbsp;the&nbsp;layer.</span></dd></dl>
+
+<dl><dt><a name="Layer-__init__"><strong>__init__</strong></a>(self, nodes: Union[List[streamgraph.base.Base], Tuple[streamgraph.base.Base], Dict[str, streamgraph.base.Base]], name: Optional[str] = None) -&gt; None</dt><dd><span class="code">Initializes&nbsp;a&nbsp;<a href="#Layer">Layer</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;list,&nbsp;tuple,&nbsp;or&nbsp;dictionary&nbsp;of&nbsp;nodes&nbsp;and&nbsp;an&nbsp;optional&nbsp;name.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nodes&nbsp;(Union[List[<a href="#Base">Base</a>],&nbsp;Tuple[<a href="#Base">Base</a>],&nbsp;Dict[str,&nbsp;<a href="#Base">Base</a>]]):&nbsp;The&nbsp;nodes&nbsp;to&nbsp;be&nbsp;included&nbsp;in&nbsp;the&nbsp;layer.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Must&nbsp;not&nbsp;contain&nbsp;other&nbsp;`<a href="#Layer">Layer</a>`&nbsp;instances.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;(Optional[str]):&nbsp;An&nbsp;optional&nbsp;name&nbsp;for&nbsp;the&nbsp;layer.&nbsp;If&nbsp;not&nbsp;provided,&nbsp;a&nbsp;name&nbsp;will&nbsp;be&nbsp;generated.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;AssertionError:&nbsp;If&nbsp;any&nbsp;of&nbsp;the&nbsp;nodes&nbsp;are&nbsp;instances&nbsp;of&nbsp;`<a href="#Layer">Layer</a>`.</span></dd></dl>
+
+<dl><dt><a name="Layer-__repr__"><strong>__repr__</strong></a>(self) -&gt; str</dt><dd><span class="code">Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;layer,&nbsp;including&nbsp;its&nbsp;ID&nbsp;and&nbsp;name.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str:&nbsp;A&nbsp;JSON&nbsp;string&nbsp;representing&nbsp;the&nbsp;layer's&nbsp;ID&nbsp;and&nbsp;name.</span></dd></dl>
+
+<dl><dt><a name="Layer-add_node"><strong>add_node</strong></a>(self, other, before: bool) -&gt; streamgraph.base.Base</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain,&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;current&nbsp;layer.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;before&nbsp;(bool):&nbsp;If&nbsp;True,&nbsp;the&nbsp;node&nbsp;is&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;layer.&nbsp;Otherwise,&nbsp;it&nbsp;is&nbsp;added&nbsp;after.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;instance&nbsp;with&nbsp;the&nbsp;added&nbsp;node.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><a name="Layer-__lshift__"><strong>__lshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Layer-__rlshift__"><strong>__rlshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Layer-__rrshift__"><strong>__rrshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Layer-__rshift__"><strong>__rshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table> <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="Node">class <strong>Node</strong></a>(<a href="streamgraph.base.html#Base">Base</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Node">Node</a>(func:&nbsp;Callable)&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;representing&nbsp;a&nbsp;node&nbsp;in&nbsp;a&nbsp;chain,&nbsp;which&nbsp;is&nbsp;associated&nbsp;with&nbsp;a&nbsp;callable&nbsp;function.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;wraps&nbsp;a&nbsp;function&nbsp;into&nbsp;a&nbsp;node,&nbsp;allowing&nbsp;it&nbsp;to&nbsp;be&nbsp;used&nbsp;in&nbsp;a&nbsp;chain&nbsp;of&nbsp;operations.<br>
+It&nbsp;stores&nbsp;information&nbsp;about&nbsp;the&nbsp;function,&nbsp;including&nbsp;its&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;positional_or_keyword&nbsp;(bool):&nbsp;Indicates&nbsp;whether&nbsp;the&nbsp;function&nbsp;accepts&nbsp;positional&nbsp;or&nbsp;keyword&nbsp;arguments.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;(str):&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;description&nbsp;(str):&nbsp;The&nbsp;documentation&nbsp;string&nbsp;of&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;args&nbsp;(List[str]):&nbsp;A&nbsp;list&nbsp;of&nbsp;argument&nbsp;names&nbsp;required&nbsp;by&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;func&nbsp;(Callable):&nbsp;The&nbsp;callable&nbsp;function&nbsp;associated&nbsp;with&nbsp;the&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;(str):&nbsp;A&nbsp;unique&nbsp;identifier&nbsp;for&nbsp;the&nbsp;node.<br>
+&nbsp;<br>
+Methods:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Node-__init__">__init__</a>(func):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Initializes&nbsp;a&nbsp;<a href="#Node">Node</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;callable&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Node-add_node">add_node</a>(other,&nbsp;before):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;current&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Node-__call__">__call__</a>(*args,&nbsp;**kwargs):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes&nbsp;the&nbsp;function&nbsp;associated&nbsp;with&nbsp;the&nbsp;node&nbsp;with&nbsp;the&nbsp;provided&nbsp;arguments.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Node-__repr__">__repr__</a>():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;node,&nbsp;including&nbsp;its&nbsp;ID,&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt>Method resolution order:</dt>
+<dd><a href="streamgraph.base.html#Node">Node</a></dd>
+<dd><a href="streamgraph.base.html#Base">Base</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Node-__call__"><strong>__call__</strong></a>(self, *args, **kwargs) -&gt; Any</dt><dd><span class="code">Executes&nbsp;the&nbsp;function&nbsp;associated&nbsp;with&nbsp;the&nbsp;node&nbsp;with&nbsp;the&nbsp;provided&nbsp;arguments.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*args:&nbsp;Positional&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**kwargs:&nbsp;Keyword&nbsp;arguments&nbsp;to&nbsp;pass&nbsp;to&nbsp;the&nbsp;function.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Any:&nbsp;The&nbsp;result&nbsp;of&nbsp;the&nbsp;function&nbsp;execution.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Exception:&nbsp;If&nbsp;an&nbsp;error&nbsp;occurs&nbsp;during&nbsp;the&nbsp;function&nbsp;execution.</span></dd></dl>
+
+<dl><dt><a name="Node-__init__"><strong>__init__</strong></a>(self, func: Callable) -&gt; None</dt><dd><span class="code">Initializes&nbsp;a&nbsp;<a href="#Node">Node</a>&nbsp;instance&nbsp;with&nbsp;a&nbsp;callable&nbsp;function.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;func&nbsp;(Callable):&nbsp;The&nbsp;function&nbsp;to&nbsp;be&nbsp;wrapped&nbsp;into&nbsp;a&nbsp;node.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;positional_or_keyword&nbsp;(bool):&nbsp;Whether&nbsp;the&nbsp;function&nbsp;accepts&nbsp;positional&nbsp;or&nbsp;keyword&nbsp;arguments.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;(str):&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;description&nbsp;(str):&nbsp;The&nbsp;documentation&nbsp;string&nbsp;of&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;args&nbsp;(List[str]):&nbsp;The&nbsp;list&nbsp;of&nbsp;argument&nbsp;names&nbsp;required&nbsp;by&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;func&nbsp;(Callable):&nbsp;The&nbsp;callable&nbsp;function&nbsp;associated&nbsp;with&nbsp;the&nbsp;node.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;(str):&nbsp;A&nbsp;unique&nbsp;identifier&nbsp;for&nbsp;the&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Node-__repr__"><strong>__repr__</strong></a>(self) -&gt; str</dt><dd><span class="code">Returns&nbsp;a&nbsp;string&nbsp;representation&nbsp;of&nbsp;the&nbsp;node,&nbsp;including&nbsp;its&nbsp;ID,&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str:&nbsp;A&nbsp;JSON&nbsp;string&nbsp;representing&nbsp;the&nbsp;node's&nbsp;ID,&nbsp;arguments,&nbsp;name,&nbsp;and&nbsp;description.</span></dd></dl>
+
+<dl><dt><a name="Node-add_node"><strong>add_node</strong></a>(self, other, before: bool) -&gt; streamgraph.base.Base</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain,&nbsp;either&nbsp;before&nbsp;or&nbsp;after&nbsp;the&nbsp;current&nbsp;node.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;before&nbsp;(bool):&nbsp;If&nbsp;True,&nbsp;the&nbsp;node&nbsp;is&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.&nbsp;Otherwise,&nbsp;it&nbsp;is&nbsp;added&nbsp;after.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;instance&nbsp;with&nbsp;the&nbsp;added&nbsp;node.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><a name="Node-__lshift__"><strong>__lshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Node-__rlshift__"><strong>__rlshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&lt;&lt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Node-__rrshift__"><strong>__rrshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;before&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator&nbsp;on&nbsp;the&nbsp;right&nbsp;side.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;before&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<dl><dt><a name="Node-__rshift__"><strong>__rshift__</strong></a>(self, other) -&gt; 'Base'</dt><dd><span class="code">Adds&nbsp;a&nbsp;node&nbsp;to&nbsp;the&nbsp;chain&nbsp;after&nbsp;the&nbsp;current&nbsp;node&nbsp;using&nbsp;the&nbsp;'&gt;&gt;'&nbsp;operator.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;other&nbsp;(<a href="#Base">Base</a>):&nbsp;The&nbsp;node&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;chain.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Base">Base</a>:&nbsp;A&nbsp;new&nbsp;chain&nbsp;with&nbsp;the&nbsp;node&nbsp;added&nbsp;after&nbsp;the&nbsp;current&nbsp;node.</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="streamgraph.base.html#Base">Base</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><a name="-node"><strong>node</strong></a>(conditional: bool = False, true_node: Optional[ForwardRef('Base')] = None, false_node: Optional[ForwardRef('Base')] = None) -&gt; Union[ForwardRef('Node'), ForwardRef('ConditionalNode')]</dt><dd><span class="code">A&nbsp;factory&nbsp;function&nbsp;for&nbsp;creating&nbsp;either&nbsp;a&nbsp;`<a href="#Node">Node</a>`&nbsp;or&nbsp;a&nbsp;`<a href="#ConditionalNode">ConditionalNode</a>`&nbsp;based&nbsp;on&nbsp;the&nbsp;given&nbsp;parameters.<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;wraps&nbsp;a&nbsp;callable&nbsp;function&nbsp;into&nbsp;a&nbsp;`<a href="#Node">Node</a>`&nbsp;or&nbsp;a&nbsp;`<a href="#ConditionalNode">ConditionalNode</a>`,&nbsp;depending&nbsp;on&nbsp;whether<br>
+the&nbsp;`conditional`&nbsp;flag&nbsp;is&nbsp;set&nbsp;and&nbsp;if&nbsp;`true_node`&nbsp;and&nbsp;`false_node`&nbsp;are&nbsp;provided.&nbsp;A&nbsp;`<a href="#ConditionalNode">ConditionalNode</a>`<br>
+is&nbsp;created&nbsp;if&nbsp;`conditional`&nbsp;is&nbsp;True&nbsp;and&nbsp;both&nbsp;`true_node`&nbsp;and&nbsp;`false_node`&nbsp;are&nbsp;specified;&nbsp;otherwise,<br>
+a&nbsp;simple&nbsp;`<a href="#Node">Node</a>`&nbsp;is&nbsp;created.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;conditional&nbsp;(bool):&nbsp;If&nbsp;True,&nbsp;create&nbsp;a&nbsp;`<a href="#ConditionalNode">ConditionalNode</a>`&nbsp;instead&nbsp;of&nbsp;a&nbsp;`<a href="#Node">Node</a>`.&nbsp;Defaults&nbsp;to&nbsp;False.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;true_node&nbsp;(Optional[Union["<a href="#Base">Base</a>"]]):&nbsp;The&nbsp;node&nbsp;to&nbsp;execute&nbsp;if&nbsp;the&nbsp;condition&nbsp;is&nbsp;True.&nbsp;Required&nbsp;if&nbsp;`conditional`&nbsp;is&nbsp;True.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;false_node&nbsp;(Optional[Union["<a href="#Base">Base</a>"]]):&nbsp;The&nbsp;node&nbsp;to&nbsp;execute&nbsp;if&nbsp;the&nbsp;condition&nbsp;is&nbsp;False.&nbsp;Required&nbsp;if&nbsp;`conditional`&nbsp;is&nbsp;True.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Callable:&nbsp;A&nbsp;function&nbsp;that&nbsp;takes&nbsp;a&nbsp;callable&nbsp;`func`&nbsp;and&nbsp;returns&nbsp;either&nbsp;a&nbsp;`<a href="#Node">Node</a>`&nbsp;or&nbsp;a&nbsp;`<a href="#ConditionalNode">ConditionalNode</a>`.<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;If&nbsp;`conditional`&nbsp;is&nbsp;True,&nbsp;`true_node`&nbsp;and&nbsp;`false_node`&nbsp;must&nbsp;be&nbsp;provided;&nbsp;otherwise,&nbsp;an&nbsp;error&nbsp;will&nbsp;occur.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;If&nbsp;`conditional`&nbsp;is&nbsp;False&nbsp;or&nbsp;if&nbsp;`true_node`&nbsp;and&nbsp;`false_node`&nbsp;are&nbsp;not&nbsp;provided,&nbsp;a&nbsp;`<a href="#Node">Node</a>`&nbsp;is&nbsp;created.<br>
+&nbsp;<br>
+Examples:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;my_node&nbsp;=&nbsp;<a href="#-node">node</a>(conditional=True,&nbsp;true_node=some_true_node,&nbsp;false_node=some_false_node)(my_function)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;simple_node&nbsp;=&nbsp;<a href="#-node">node</a>()(my_function)</span></dd></dl>
+</td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>CSS_MERMAID</strong> = '<span class="repr">\n\n</span>classDef rectangle fill:#89CFF0,stroke:#003366...ke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;<span class="repr">\n</span>'<br>
+<strong>Callable</strong> = typing.Callable<br>
+<strong>Dict</strong> = typing.Dict<br>
+<strong>List</strong> = typing.List<br>
+<strong>Optional</strong> = typing.Optional<br>
+<strong>Tuple</strong> = typing.Tuple<br>
+<strong>Union</strong> = typing.Union<br>
+<strong>logger</strong> = &lt;Logger streamgraph.base (DEBUG)&gt;</td></tr></table>
+</body></html>
