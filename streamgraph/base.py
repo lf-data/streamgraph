@@ -551,13 +551,13 @@ class Chain(Base):
             logger.error(e, extra={"id": self.id, "func": self.name})
             raise
 
-    def view(self, direction: str = "TB", path: Optional[str] = None):
+    def view(self, path: str, direction: str = "TB"):
         """
         Generates a visual representation of the chain using Mermaid and saves it as a PNG image.
 
         Args:
+            path (str): The file path where the PNG image will be saved.
             direction (str): The direction of the flowchart ('TB' for top-bottom, 'LR' for left-right).
-            path (Optional[str]): The file path where the PNG image will be saved. If None, it uses the chain's name.
         
         Raises:
             Exception: If the image generation fails.
@@ -569,8 +569,7 @@ class Chain(Base):
         base64_string = base64_bytes.decode("ascii")
         response = requests.get("https://mermaid.ink/img/" + base64_string)
         if response.status_code == 200:
-            path_img = f'{self.name}.png' if path is None else path
-            with open(path_img, 'wb') as file:
+            with open(path, 'wb') as file:
                 file.write(response.content)
         else:
             print(f"Failed to generate PNG image. Status code: {response.status_code}")
