@@ -1,8 +1,8 @@
-from .utils import _input_args, _is_positional_or_keyword, _get_args, CSS_MERMAID
-from typing import Any, Optional, Callable, Union, List, Dict, Tuple
+from .utils import _input_args, _is_positional_or_keyword, _get_args, _get_docs, _get_chain_name, _get_layer_name
+from .utils import Callable, List, Dict, Tuple, CSS_MERMAID
+from typing import Any, Optional, Union
 from functools import lru_cache
 from copy import deepcopy
-import inspect
 import logging
 import json
 import os
@@ -17,6 +17,7 @@ lru_cache(maxsize=2)
 def _reset_id(nodes: list):
     nodes = [deepcopy(node) for node in nodes]
     for node in nodes:
+        assert isinstance(node, Base), "The items in 'nodes' must be Base instances"
         node.id = str(uuid.uuid4())
         if isinstance(node, ConditionalNode):
             node.true_node = deepcopy(node.true_node)
@@ -38,6 +39,7 @@ def _create_mermaid(nodes: list):
     first_node = None
     last_node = None
     for node in nodes:
+        assert isinstance(node, Base), "The items in 'nodes' must be Base instances"
         if isinstance(node, Node):
             if isinstance(node, ConditionalNode):
                 # If the shape is diamond, use the appropriate Mermaid syntax
@@ -153,7 +155,7 @@ def _check_input_node(inputs) ->None:
     else:
         # If input is not a Chain, Node, or Layer, raise a TypeError
         if not isinstance(inputs, Base):
-            raise TypeError('Only "BaseChain", or lists of this class can be used as inputs')
+            raise TypeError('Only "Base", or lists of this class can be used as inputs')
 
 lru_cache(maxsize=2)
 def _convert_parallel_node(inputs) ->Any:
@@ -174,19 +176,15 @@ def _convert_parallel_node(inputs) ->Any:
         return Layer(inputs)
 
 # Decorator function to create a node or conditional_node
-def node(description: Optional[str] = None,  
-         name: Optional[str] = None, 
-         conditional: bool = False, 
+def node(conditional: bool = False, 
          true_node: Optional[Union["Base"]] = None, 
          false_node: Optional[Union["Base"]] = None):
     def run_node(func: Callable):
         if conditional and true_node is not None and false_node is not None:
             return ConditionalNode(func, true_node=true_node, 
-                                   false_node=false_node, 
-                                   description=description, 
-                                   name=name)
+                                   false_node=false_node)
         else:
-            return Node(func, description=description, name=name)
+            return Node(func)
     
     return run_node
 
@@ -213,15 +211,24 @@ class Base:
         return self.add_node(other, before=True)
 
 class Chain(Base):
-    def __init__(self, nodes: List[Base], name: str = "Chain", description: Optional[str] = None):
+    def __init__(self, nodes: List[Base], name: Optional[str] = None):
         # Ensure there are at least two nodes in the chain
         assert len(nodes) > 1, "There must be at least two nodes"
         _check_input_node(nodes)
         nodes = _reset_id(nodes)
         self._nodes = nodes
-        self.name = name
-        self.description = description
+        if name is not None:
+            self.name = name
+        else:
+            self.name = _get_chain_name(nodes)
         self.id = str(uuid.uuid4())
+
+    def __or__(self, other):
+        if isinstance(other, str):
+            self.name = other
+            return deepcopy(self)
+        else:
+            raise ValueError("The name be 'str'")
 
     def add_node(self, other, before: bool) ->Base:
         # Create a deep copy of the current instance to avoid modifying the original
@@ -258,7 +265,8 @@ class Chain(Base):
                         x = node(x)
             return x
         except Exception as e:
-            logger.error(e, exc_info=True, extra={"id": self.name})
+            logger.error(e, extra={"id": self.id, "func": self.name})
+            raise
 
     def view(self, direction: str = "TB", path: Optional[str] = None):
         mg = "\n".join(_create_mermaid(self._nodes)[1])
@@ -277,16 +285,13 @@ class Chain(Base):
     def __repr__(self) -> str:
         json_repr = json.dumps({
             "id": self.id,
-            "name": self.name,
-            "description": self.description 
+            "name": self.name
         })
         return f"Chain({json_repr})"
     
 
 class Layer(Base):
-    def __init__(self, nodes: Union[List[Base], Tuple[Base], Dict[str, Base]], 
-                 name: str = "Layer", 
-                 description: Optional[str] = None):
+    def __init__(self, nodes: Union[List[Base], Tuple[Base], Dict[str, Base]], name: Optional[str] = None):
         # Ensure that there are no nested layers within this layer
         assert len([node for node in nodes if isinstance(node, Layer)]) == 0, "Layers cannot contain other Layers"
         # Check if the input nodes are valid
@@ -294,8 +299,10 @@ class Layer(Base):
         # Store the nodes in the layer
         nodes = _reset_id(nodes)
         self._nodes = nodes
-        self.name = name
-        self.description = description
+        if name is not None:
+            self.name = name
+        else:
+            self.name = _get_layer_name(nodes)
         # Determine if the nodes are stored in a dictionary
         self._is_dict = True if isinstance(nodes, dict) else False
         self.id = str(uuid.uuid4())
@@ -338,36 +345,28 @@ class Layer(Base):
                     res = pool.starmap(run_node, input_map)
             return res
         except Exception as e:
-            logger.error(e, exc_info=True, extra={"id": self.name})
+            logger.error(e, extra={"id": self.id, "func": self.name})
+            raise
     
     def __repr__(self) -> str:
         json_repr = json.dumps({
             "id": self.id,
-            "name": self.name,
-            "description": self.description 
+            "name": self.name
         })
         return f"Layer({json_repr})"
 
 
 class Node(Base):
     def __init__(self, 
-                 func: Callable,
-                 description: Optional[str] = None,
-                 name: Optional[str] = None):
+                 func: Callable):
         # Determine if the function accepts positional or keyword arguments
         self.positional_or_keyword = _is_positional_or_keyword(func)
         # Set the name of the node to the function's name
         self.name = func.__name__
         # Get the function's docstring as its description
-        self.description = inspect.getdoc(func)
+        self.description = _get_docs(func)
         # Retrieve the function's argument names
         self.args = _get_args(func)
-        # If a custom description is provided, use it
-        if description is not None:
-            self.description = description
-        # If a custom name is provided, use it
-        if name is not None:
-            self.name = name
         # Store the function to be executed by the node
         self.func = func
         self.id = str(uuid.uuid4())
@@ -388,20 +387,21 @@ class Node(Base):
     def __call__(self, *args, **kwargs)-> Any:
         try:
         # If the function does not accept positional arguments
-            logger.info("Start Node", extra={"id": self.name})
+            logger.info("Start Node", extra={"id": self.id, "func": self.name})
             if not self.positional_or_keyword:
                 # Map the input arguments to the function's parameters
-                logger.info("Select input args", extra={"id": self.name})
+                logger.info("Select input args", extra={"id": self.id, "func": self.name})
                 inp_args = _input_args(args, kwargs, node_args=self.args)
                 # Call the function with keyword arguments
-                logger.info("End Node", extra={"id": self.name})
+                logger.info("End Node", extra={"id": self.id, "func": self.name})
                 return self.func(**inp_args)
             else:
                 # Call the function with positional arguments
-                logger.info("End Node", extra={"id": self.name})
+                logger.info("End Node", extra={"id": self.id, "func": self.name})
                 return self.func(*args, **kwargs)
         except Exception as e:
-            logger.error(e, exc_info=True, extra={"id": self.name})
+            logger.error(e, extra={"id": self.id, "func": self.name})
+            raise
     
     def __repr__(self) ->str:
         json_repr = json.dumps({
@@ -416,10 +416,8 @@ class Node(Base):
 class ConditionalNode(Node):
     def __init__(self, func: Callable, 
                  true_node: Union[Base],
-                 false_node: Union[Base],
-                 description: Optional[str] = None, 
-                 name: Optional[str] = None):
-        super().__init__(func, description, name)
+                 false_node: Union[Base]):
+        super().__init__(func)
         true_node = deepcopy(true_node)
         true_node.id = str(uuid.uuid4())
         if hasattr(true_node, "_nodes"):
@@ -436,11 +434,11 @@ class ConditionalNode(Node):
     def __call__(self, *args, **kwargs)-> Any:
         # If the function does not accept positional arguments
         try:
-            logger.info("Start ConditionlNode", extra={"id": self.name})
-            logger.info("Get bool value", extra={"id": self.name})
+            logger.info("Start ConditionlNode", extra={"id": self.id, "func": self.name})
+            logger.info("Get bool value", extra={"id": self.id, "func": self.name})
             if not self.positional_or_keyword:
                 # Map the input arguments to the function's parameters
-                logger.info("Select input args", extra={"id": self.name})
+                logger.info("Select input args", extra={"id": self.id, "func": self.name})
                 inp_args = _input_args(args, kwargs, node_args=self.args)
                 # Call the function with keyword arguments
                 res = self.func(**inp_args)
@@ -450,12 +448,14 @@ class ConditionalNode(Node):
                 res = self.func(*args, **kwargs)
                 assert isinstance(res, bool), "The output of ConditionalNode's function must be boolean"
 
-            logger.info(f"Execute {str(res)} Node", extra={"id": self.name})
-            logger.info("End conditionalNode", extra={"id": self.name})
+            logger.info(f"Execute {str(res)} Node", extra={"id": self.id, "func": self.name})
+            logger.info("End ConditionalNode", extra={"id": self.id, "func": self.name})
             # if the output is true the true_node will be executed, otherwise the false_node
             return  self.true_node(*args, **kwargs) if res else self.false_node(*args, **kwargs)
         except Exception as e:
-            logger.error(e, exc_info=True, extra={"id": self.name})
+            logger.error(e, extra={"id": self.id, "func": self.name})
+            raise
+            
         
     def __repr__(self) ->str:
         json_repr = json.dumps({

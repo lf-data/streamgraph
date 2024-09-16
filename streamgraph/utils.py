@@ -1,7 +1,5 @@
 import inspect
-import random
-import string
-from typing import Callable, Tuple, List, Dict, Optional
+from typing import Callable, Tuple, List, Dict, Union
 
 
 CSS_MERMAID = """
@@ -9,6 +7,16 @@ CSS_MERMAID = """
 classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
 """
+
+def _get_layer_name(nodes: Union[List, Dict, Tuple]):
+    if isinstance(nodes, dict):
+        nodes = [value for key, value in nodes.items()]
+    return "|" + "|-|".join([node.name for node in nodes]) + "|"
+
+def _get_chain_name(nodes: Union[List, Dict, Tuple]):
+    if isinstance(nodes, dict):
+        nodes = [value for key, value in nodes.items()]
+    return "|" + "|-->|".join([node.name for node in nodes]) + "|"
 
 # Function to map input arguments to the node's parameters
 def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
@@ -47,4 +55,15 @@ def _get_args(func: Callable) ->bool:
     # Get the function's signature
     sig = inspect.signature(func)
     # Return a list of parameter names
-    return [name for name in sig.parameters.keys()]
+    list_args = []
+    for name, param in sig.parameters.items():
+        if param.kind == param.VAR_POSITIONAL:
+            list_args.append(name + "*")
+        elif param.kind == param.VAR_KEYWORD:
+            list_args.append(name + "**")
+        else:
+            list_args.append(name)
+    return list_args
+
+def _get_docs(func: Callable) -> str:
+    return inspect.getdoc(func)
