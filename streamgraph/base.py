@@ -1,5 +1,6 @@
-from .utils import _input_args, _is_positional_or_keyword, _get_args, _get_docs, _get_chain_name, _get_layer_name
+from .utils import _input_args, _is_positional_or_keyword, _get_args, _get_docs
 from .utils import Callable, List, Dict, Tuple, CSS_MERMAID
+from .utils import IdCounter
 from typing import Any, Optional, Union
 from functools import lru_cache
 from copy import deepcopy
@@ -9,9 +10,10 @@ import os
 import multiprocessing.pool
 import requests
 import base64
-import uuid
 
 logger = logging.getLogger(__name__)
+
+counter = IdCounter()
 
 lru_cache(maxsize=2)
 def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
@@ -57,15 +59,15 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
             node = nodeid
         
         assert isinstance(node, Base), "The items in 'nodes' must be Base instances"
-        node.id = str(uuid.uuid4())
+        node.id = node.name + str(counter.get_value())
         if isinstance(node, ConditionalNode):
             node.true_node = deepcopy(node.true_node)
-            node.true_node.id = str(uuid.uuid4())
+            node.true_node.id = node.true_node.name + str(counter.get_value())
             if hasattr(node.true_node, "_nodes"):
                 node.true_node._nodes = _reset_id(node.true_node._nodes) 
 
             node.false_node = deepcopy(node.false_node)
-            node.false_node.id = str(uuid.uuid4())
+            node.false_node.id = node.false_node.name + str(counter.get_value())
             if hasattr(node.false_node, "_nodes"):
                 node.false_node._nodes = _reset_id(node.false_node._nodes)
         elif isinstance(node, (Chain, Layer)):
@@ -444,6 +446,15 @@ class Chain(Base):
         
         view(direction='TB', path=None):
             Generates a visual representation of the chain using Mermaid and saves it as a PNG image.
+
+        __getitem__(index):
+            Retrieves the node at the specified index.
+
+        get_node_data():
+            Extracts the data of each node in the chain.
+        
+        __setitem__(index, node):
+            Replaces the node at the specified index with a new node.
         
         __repr__():
             Returns a string representation of the chain, including its ID and name.
@@ -472,13 +483,14 @@ class Chain(Base):
             AssertionError: If the number of nodes is less than two.
         """
         assert len(nodes) > 1, "There must be at least two nodes"
+        _check_input_node(nodes)
         nodes = _reset_id(nodes)
         self._nodes = nodes
         if name is not None:
             self.name = name
         else:
-            self.name = _get_chain_name(nodes)
-        self.id = str(uuid.uuid4())
+            self.name = "Chain"
+        self.id = self.name + str(counter.get_value())
 
     def __or__(self, other):
         """
@@ -494,8 +506,10 @@ class Chain(Base):
             ValueError: If the provided name is not a string.
         """
         if isinstance(other, str):
-            self.name = other
-            return deepcopy(self)
+            cself = deepcopy(self)
+            cself.name = other
+            cself.id = cself.name + str(counter.get_value())
+            return cself
         else:
             raise ValueError("The name be 'str'")
 
@@ -535,6 +549,7 @@ class Chain(Base):
             Exception: If an error occurs during the execution of any node in the chain.
         """
         try:
+            logger.info("Start Chain", extra={"id": self.id, "name_class": self.name})
             x = None
             for i, node in enumerate(self._nodes):
                 if i == 0:
@@ -546,9 +561,10 @@ class Chain(Base):
                         x = node(**x)
                     else:
                         x = node(x)
+            logger.info("End Chain", extra={"id": self.id, "name_class": self.name})
             return x
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "func": self.name})
+            logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
 
     def view(self, path: str, direction: str = "TB"):
@@ -573,6 +589,52 @@ class Chain(Base):
                 file.write(response.content)
         else:
             print(f"Failed to generate PNG image. Status code: {response.status_code}")
+
+    def get_node_data(self) -> List[Dict[str, Any]]:
+        """
+        Extracts the data of each node in the chain.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries containing details of each node.
+            Each dictionary includes the node's name, function, ID, and class type.
+        """
+        node_data_list = []
+        for node in self._nodes:
+            node_data = {
+                "name": getattr(node, 'name', None),
+                "function": getattr(node, '__call__', None).__name__ if isinstance(node, (Node, ConditionalNode)) else None,
+                "id": getattr(node, 'id', None),
+                "class_type": type(node).__name__
+            }
+            node_data_list.append(node_data)
+        return node_data_list
+
+    def __getitem__(self, index: int) -> Base:
+        """
+        Retrieves the node at the specified index.
+
+        Args:
+            index (int): The index of the node to retrieve.
+
+        Returns:
+            Base: The node at the specified index.
+        """
+        return self._nodes[index]
+
+    def __setitem__(self, index: int, node: Base) -> None:
+        """
+        Replaces the node at the specified index with a new node.
+
+        Args:
+            index (int): The index of the node to replace.
+            node (Base): The new node to set at the specified index.
+
+        Raises:
+            ValueError: If the provided node is not an instance of Base.
+        """
+        _check_input_node(node)
+        self._nodes[index] = _convert_parallel_node(node)
+        self._nodes = _reset_id(self._nodes)
     
     def __repr__(self) -> str:
         """
@@ -627,14 +689,16 @@ class Layer(Base):
             AssertionError: If any of the nodes are instances of `Layer`.
         """
         assert len([node for node in nodes if isinstance(node, Layer)]) == 0, "Layers cannot contain other Layers"
+        assert len(nodes) > 1, "There must be at least two nodes"
+        _check_input_node(nodes)
         nodes = _reset_id(nodes)
         self._nodes = nodes
         if name is not None:
             self.name = name
         else:
-            self.name = _get_layer_name(nodes)
+            self.name = "Layer"
         self._is_dict = True if isinstance(nodes, dict) else False
-        self.id = str(uuid.uuid4())
+        self.id = self.name + str(counter.get_value())
 
     def add_node(self, other, before: bool) ->Base:
         """
@@ -671,6 +735,7 @@ class Layer(Base):
             Exception: If an error occurs during the execution of any node in the layer.
         """
         try:
+            logger.info("Start Layer", extra={"id": self.id, "name_class": self.name})
             res = {} if self._is_dict else []
             cpus = max([int(os.cpu_count()/2), 1])
             run_node = lambda node, args, kwargs: node(*args, **kwargs)
@@ -684,9 +749,10 @@ class Layer(Base):
                 else:
                     input_map = [(node, args, kwargs) for node in self._nodes]
                     res = pool.starmap(run_node, input_map)
+            logger.info("End Layer", extra={"id": self.id, "name_class": self.name})
             return res
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "func": self.name})
+            logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
     
     def __repr__(self) -> str:
@@ -751,7 +817,7 @@ class Node(Base):
         self.description = _get_docs(func)
         self.args = _get_args(func)
         self.func = func
-        self.id = str(uuid.uuid4())
+        self.id = self.name + str(counter.get_value())
 
     def add_node(self, other, before: bool) ->Base:
         """
@@ -788,17 +854,17 @@ class Node(Base):
             Exception: If an error occurs during the function execution.
         """
         try:
-            logger.info("Start Node", extra={"id": self.id, "func": self.name})
+            logger.info("Start Node", extra={"id": self.id, "name_class": self.name})
             if not self.positional_or_keyword:
-                logger.info("Select input args", extra={"id": self.id, "func": self.name})
+                logger.info("Select input args", extra={"id": self.id, "name_class": self.name})
                 inp_args = _input_args(args, kwargs, node_args=self.args)
-                logger.info("End Node", extra={"id": self.id, "func": self.name})
+                logger.info("End Node", extra={"id": self.id, "name_class": self.name})
                 return self.func(**inp_args)
             else:
-                logger.info("End Node", extra={"id": self.id, "func": self.name})
+                logger.info("End Node", extra={"id": self.id, "name_class": self.name})
                 return self.func(*args, **kwargs)
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "func": self.name})
+            logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
     
     def __repr__(self) ->str:
@@ -839,8 +905,8 @@ class ConditionalNode(Node):
             Returns a string representation of the conditional node, including its ID, arguments, name, and description.
     """
     def __init__(self, func: Callable, 
-                 true_node: Union[Base],
-                 false_node: Union[Base]):
+                 true_node: Base,
+                 false_node: Base):
         """
         Initializes a ConditionalNode instance with a callable function and two possible nodes for execution.
 
@@ -854,13 +920,14 @@ class ConditionalNode(Node):
             false_node (Base): A deep copy of the false_node with a new unique ID.
         """
         super().__init__(func)
+        _check_input_node([true_node, false_node])
         true_node = deepcopy(true_node)
-        true_node.id = str(uuid.uuid4())
+        true_node.id = true_node.name + str(counter.get_value())
         if hasattr(true_node, "_nodes"):
             true_node._nodes = _reset_id(true_node._nodes)
         
         false_node = deepcopy(false_node)
-        false_node.id = str(uuid.uuid4())
+        false_node.id = false_node.name + str(counter.get_value())
         if hasattr(false_node, "_nodes"):
             false_node._nodes = _reset_id(false_node._nodes)
         
@@ -883,10 +950,10 @@ class ConditionalNode(Node):
             Exception: If an error occurs during the execution of the function or nodes.
         """
         try:
-            logger.info("Start ConditionlNode", extra={"id": self.id, "func": self.name})
-            logger.info("Get bool value", extra={"id": self.id, "func": self.name})
+            logger.info("Start ConditionlNode", extra={"id": self.id, "name_class": self.name})
+            logger.info("Get bool value", extra={"id": self.id, "name_class": self.name})
             if not self.positional_or_keyword:
-                logger.info("Select input args", extra={"id": self.id, "func": self.name})
+                logger.info("Select input args", extra={"id": self.id, "name_class": self.name})
                 inp_args = _input_args(args, kwargs, node_args=self.args)
                 res = self.func(**inp_args)
                 assert isinstance(res, bool), "The output of ConditionalNode's function must be boolean"
@@ -894,11 +961,11 @@ class ConditionalNode(Node):
                 res = self.func(*args, **kwargs)
                 assert isinstance(res, bool), "The output of ConditionalNode's function must be boolean"
 
-            logger.info(f"Execute {str(res)} Node", extra={"id": self.id, "func": self.name})
-            logger.info("End ConditionalNode", extra={"id": self.id, "func": self.name})
+            logger.info(f"Execute {str(res)} Node", extra={"id": self.id, "name_class": self.name})
+            logger.info("End ConditionalNode", extra={"id": self.id, "name_class": self.name})
             return  self.true_node(*args, **kwargs) if res else self.false_node(*args, **kwargs)
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "func": self.name})
+            logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
             
         

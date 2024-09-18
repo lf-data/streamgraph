@@ -1,5 +1,5 @@
 import inspect
-from typing import Callable, Tuple, List, Dict, Union
+from typing import Callable, Tuple, List, Dict
 
 
 CSS_MERMAID = """
@@ -8,77 +8,24 @@ classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
 """
 
-def _get_layer_name(nodes: Union[List, Dict, Tuple]):
+class IdCounter:
+    """A simple counter class to generate sequential integer IDs.
+    
+    This class provides a mechanism to generate unique integer IDs
+    starting from 1. It can also reset the counter back to zero.
     """
-    Generates a string representation of the names of nodes in a layer, formatted for visualization.
-
-    This function constructs a formatted string representing the names of nodes in a layer. If the nodes are 
-    provided as a dictionary, their values are extracted and used. The resulting string uses a specific format 
-    to visually separate the node names.
-
-    Args:
-        nodes (Union[List, Dict, Tuple]): A collection of nodes, where each node is expected to have a `name` attribute. 
-                                          Can be a list, dictionary, or tuple of nodes.
-
-    Returns:
-        str: A formatted string representing the names of the nodes, separated by `|` and `|-|` characters. 
-             For example, `"|Node1|-|Node2|-|Node3|"` if there are three nodes named `Node1`, `Node2`, and `Node3`.
-
-    Example:
-        >>> class Node:
-        ...     def __init__(self, name):
-        ...         self.name = name
-        >>> nodes = [Node("A"), Node("B"), Node("C")]
-        >>> _get_layer_name(nodes)
-        '|A|-|B|-|C|'
-
-        >>> nodes_dict = {'a': Node("X"), 'b': Node("Y")}
-        >>> _get_layer_name(nodes_dict)
-        '|X|-|Y|'
-
-    Notes:
-        - The function converts nodes from a dictionary to a list of their values if necessary.
-        - The resulting string uses `|-|` to separate node names, suitable for visualization or graph representation.
-    """
-    if isinstance(nodes, dict):
-        nodes = [value for key, value in nodes.items()]
-    return "|" + "|-|".join([node.name for node in nodes]) + "|"
-
-def _get_chain_name(nodes: Union[List, Dict, Tuple]):
-    """
-    Generates a string representation of the names of nodes in a chain, formatted for visualization.
-
-    This function creates a formatted string representing the names of nodes in a chain. If the nodes are provided
-    as a dictionary, their values are extracted and used. The resulting string uses a specific format to visually 
-    depict the sequence of nodes in a chain.
-
-    Args:
-        nodes (Union[List, Dict, Tuple]): A collection of nodes, where each node is expected to have a `name` attribute.
-                                          Can be a list, dictionary, or tuple of nodes.
-
-    Returns:
-        str: A formatted string representing the names of the nodes, separated by `|` and `-->|` characters.
-             For example, `"|Node1|-->|Node2|-->|Node3|"` if there are three nodes named `Node1`, `Node2`, and `Node3`.
-
-    Example:
-        >>> class Node:
-        ...     def __init__(self, name):
-        ...         self.name = name
-        >>> nodes = [Node("Start"), Node("Process"), Node("End")]
-        >>> _get_chain_name(nodes)
-        '|Start|-->|Process|-->|End|'
-
-        >>> nodes_dict = {'first': Node("A"), 'second': Node("B")}
-        >>> _get_chain_name(nodes_dict)
-        '|A|-->|B|'
-
-    Notes:
-        - The function converts nodes from a dictionary to a list of their values if necessary.
-        - The resulting string uses `-->|` to separate node names, illustrating the sequence in a chain.
-    """
-    if isinstance(nodes, dict):
-        nodes = [value for key, value in nodes.items()]
-    return "|" + "|-->|".join([node.name for node in nodes]) + "|"
+    def __init__(self) -> None:
+        """Initializes the IdCounter with a starting counter value of 0."""
+        self.counter = 0
+    
+    def get_value(self) -> int:
+        """Increments the counter by 1 and returns the new value.
+        
+        Returns:
+            int: The next sequential integer ID.
+        """
+        self.counter += 1
+        return self.counter
 
 def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
     """
