@@ -1,4 +1,4 @@
-from .base import Layer, Node, Chain, ConditionalNode, node
+from .base import Layer, Node, Chain, IfNode, LoopNode, node
 import logging
 from colorama import init, Fore, Style
 import json
@@ -190,4 +190,4 @@ logger.setLevel(logging.DEBUG)
 
 
 
-__all__ = ['node', 'Layer', 'Node', "Chain", "ConditionalNode", "logger"]
+__all__ = ['node', 'Layer', 'Node', "Chain", "IfNode", "LoopNode", "logger"]

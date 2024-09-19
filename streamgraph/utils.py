@@ -6,6 +6,7 @@ CSS_MERMAID = """
 
 classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
+classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray: 5;
 """
 
 class IdCounter:

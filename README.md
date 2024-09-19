@@ -39,8 +39,7 @@ def multiply(a, b):
     return a * b
 
 chain = [add, divide] >> multiply
-print(chain(2, 3))  # Output: 3.333
-chain.view()
+chain.view(path="chain1.png")
 ```
 
 ![chain1](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain1.png)
@@ -48,7 +47,7 @@ chain.view()
 ### 11. ConditionalNode to check prime number
 
 ```python
-from streamgraph import node
+from streamgraph import node, IfNode
 
 @node()
 def give_prime_num(n):
@@ -71,13 +70,10 @@ def is_prime():
 def is_not_prime():
     return "This number is not prime"
 
-@node(conditional=True, true_node=is_prime, false_node=is_not_prime)
-def check_prime(prime):
-    return prime
+check_prime_node = IfNode(lambda x: x, true_node=is_prime, false_node=is_not_prime)
 
-chain = give_prime_num >> check_prime
-print(chain(4)) # This number is not prime
-chain.view()
+chain = give_prime_num >> check_prime_node
+chain.view(path="chain2.png")
 ```
 
 ![chain2](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain2.png)
@@ -86,7 +82,7 @@ chain.view()
 ### 12. Complex chain with nodes repeated several times
 
 ```python
-from streamgraph import node
+from streamgraph import node, IfNode, LoopNode
 
 @node()
 def plus_one(num: int):
@@ -98,14 +94,36 @@ def plus_two(num: int):
 
 @node()
 def sum_all(*args):
-    print("Ciao")
     return sum(args)
 
+@node()
+def give_prime_num(n):
+    print(n)
+    if n <= 3:
+        return n > 1
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+    i = 5
+    while i ** 2 <= n:
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+        i += 6
+    return True
+
+@node()
+def is_prime():
+    return "This number is prime"
+
+@node()
+def is_not_prime():
+    return "This number is not prime"
+
+check_prime_node = IfNode(lambda x: x, true_node=is_prime, false_node=is_not_prime)
 base_chain = plus_one >> plus_two >> [plus_one, plus_one] >> sum_all
 intermediate_chain = base_chain << plus_one << plus_two << sum_all
-chain = plus_one >> [base_chain, plus_two] >> intermediate_chain
-print(chain(1)) # Output: 46
-chain.view()
+loop_node = LoopNode(lambda x: x >= 100, loop_node=intermediate_chain)
+chain = plus_one >> [base_chain, plus_two] >> loop_node >> give_prime_num >> check_prime_node
+chain.view(path="chain3.png")
 ```
 
 ![chain3](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain3.png)
