@@ -8,25 +8,29 @@ classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
 classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray: 5;
 """
+    
+def _id_counter():
+    """A simple generation function to generate sequential integer IDs.
+    
+    This functions provides a mechanism to generate unique integer IDs
+    starting from 1.
 
-class IdCounter:
-    """A simple counter class to generate sequential integer IDs.
-    
-    This class provides a mechanism to generate unique integer IDs
-    starting from 1. It can also reset the counter back to zero.
+    Returns:
+        int: Return the integer IDs.
+
+    Example:
+        >>> _id_counter()
+        1
+        >>> _id_counter()
+        2
+
+    Notes:
+        - The function use "yield" instead of "return" in order to remember the previous value of counter variable.
     """
-    def __init__(self) -> None:
-        """Initializes the IdCounter with a starting counter value of 0."""
-        self.counter = 0
-    
-    def get_value(self) -> int:
-        """Increments the counter by 1 and returns the new value.
-        
-        Returns:
-            int: The next sequential integer ID.
-        """
-        self.counter += 1
-        return self.counter
+    counter = 1
+    while True:
+        yield counter
+        counter += 1
 
 def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
     """
