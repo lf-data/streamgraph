@@ -12,6 +12,8 @@ import base64
 
 logger = logging.getLogger(__name__)
 
+counter = _id_counter()
+
 lru_cache(maxsize=2)
 def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
     """
@@ -56,20 +58,20 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
             node = nodeid
         
         assert isinstance(node, Base), "The items in 'nodes' must be Base instances"
-        node.id = node.name + str(_id_counter())
+        node.id = node.name + str(next(counter))
         if isinstance(node, IfNode):
             node.true_node = deepcopy(node.true_node)
-            node.true_node.id = node.true_node.name + str(_id_counter())
+            node.true_node.id = node.true_node.name + str(next(counter))
             if hasattr(node.true_node, "_nodes"):
                 node.true_node._nodes = _reset_id(node.true_node._nodes) 
 
             node.false_node = deepcopy(node.false_node)
-            node.false_node.id = node.false_node.name + str(_id_counter())
+            node.false_node.id = node.false_node.name + str(next(counter))
             if hasattr(node.false_node, "_nodes"):
                 node.false_node._nodes = _reset_id(node.false_node._nodes)
         elif isinstance(node, LoopNode):
             node.loop_node = deepcopy(node.loop_node)
-            node.loop_node.id = node.loop_node.name + str(_id_counter())
+            node.loop_node.id = node.loop_node.name + str(next(counter))
             if hasattr(node.loop_node, "_nodes"):
                 node.loop_node._nodes = _reset_id(node.loop_node._nodes)
         elif isinstance(node, (Chain, Layer)):
@@ -500,7 +502,7 @@ class Chain(Base):
             self.name = name
         else:
             self.name = "Chain"
-        self.id = self.name + str(_id_counter())
+        self.id = self.name + str(next(counter))
 
     def __or__(self, other):
         """
@@ -518,7 +520,7 @@ class Chain(Base):
         if isinstance(other, str):
             cself = deepcopy(self)
             cself.name = other
-            cself.id = cself.name + str(_id_counter())
+            cself.id = cself.name + str(next(counter))
             return cself
         else:
             raise ValueError("The name be 'str'")
@@ -708,7 +710,7 @@ class Layer(Base):
         else:
             self.name = "Layer"
         self._is_dict = True if isinstance(nodes, dict) else False
-        self.id = self.name + str(_id_counter())
+        self.id = self.name + str(next(counter))
 
     def add_node(self, other, before: bool) ->Base:
         """
@@ -827,7 +829,7 @@ class Node(Base):
         self.description = _get_docs(func)
         self.args = _get_args(func)
         self.func = func
-        self.id = self.name + str(_id_counter())
+        self.id = self.name + str(next(counter))
 
     def add_node(self, other, before: bool) ->Base:
         """
@@ -932,12 +934,12 @@ class IfNode(Node):
         super().__init__(func)
         _check_input_node([true_node, false_node])
         true_node = deepcopy(true_node)
-        true_node.id = true_node.name + str(_id_counter())
+        true_node.id = true_node.name + str(next(counter))
         if hasattr(true_node, "_nodes"):
             true_node._nodes = _reset_id(true_node._nodes)
         
         false_node = deepcopy(false_node)
-        false_node.id = false_node.name + str(_id_counter())
+        false_node.id = false_node.name + str(next(counter))
         if hasattr(false_node, "_nodes"):
             false_node._nodes = _reset_id(false_node._nodes)
         
@@ -1034,7 +1036,7 @@ class LoopNode(Node):
         super().__init__(condition_func)
         _check_input_node([loop_node])
         loop_node = deepcopy(loop_node)
-        loop_node.id = loop_node.name + str(_id_counter())
+        loop_node.id = loop_node.name + str(next(counter))
         if hasattr(loop_node, "_nodes"):
             loop_node._nodes = _reset_id(loop_node._nodes)
 
