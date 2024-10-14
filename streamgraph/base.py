@@ -602,6 +602,17 @@ class Chain(Base):
         else:
             print(f"Failed to generate PNG image. Status code: {response.status_code}")
 
+    def show(self, direction: str = "TB"):
+        """
+        Generates a visual representation of the chain using Mermaid.
+
+        Args:
+            direction (str): The direction of the flowchart ('TB' for top-bottom, 'LR' for left-right).
+        """
+        mg = "\n".join(_create_mermaid(self._nodes)[1])
+        mg = f"flowchart {direction};\n" + mg + CSS_MERMAID
+        return mg
+
     def get_node_data(self) -> List[Dict[str, Any]]:
         """
         Extracts the data of each node in the chain.
