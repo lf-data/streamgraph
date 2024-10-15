@@ -347,22 +347,50 @@ def node() -> "Node":
     """
     Factory function for creating a `Node` instance.
 
-    This function wraps a callable function into a `Node`. If you need to create a `IfNode`, 
-    use a different approach as this function currently does not support conditional logic 
-    or creating `IfNode` instances.
+    This function wraps a callable function into a `Node`.
 
     Returns:
         Callable: A function that takes a callable `func` and returns a `Node` instance.
 
-    Examples:
-        >>> my_node = node()(my_function)
+    Notes:
+        - This function only creates a simple `Node`.
+    """
+    def run_node(func: Callable) -> Node:
+        return Node(func)
+    
+    return run_node
+
+def ifnode(true_node: "Base", false_node: "Base") -> "IfNode":
+    """
+    Factory function for creating a `IfNode` instance.
+
+    This function wraps a callable function into a `IfNode`.
+
+    Returns:
+        Callable: A function that takes a callable `func` and returns a `IfNode` instance.
 
     Notes:
-        - This function only creates a simple `Node`. It does not handle conditional logic or the creation 
-          of `IfNode` instances.
+        - This function only creates a simple `IfNode`.
     """
-    def run_node(func: Callable) -> "Base":
-        return Node(func)
+    def run_node(func: Callable, true_node = true_node, false_node = false_node) -> IfNode:
+        return IfNode(func, true_node=true_node, false_node=false_node)
+    
+    return run_node
+
+def loopnode(loop_node: "Base") -> "LoopNode":
+    """
+    Factory function for creating a `LoopNode` instance.
+
+    This function wraps a callable function into a `LoopNode`.
+
+    Returns:
+        Callable: A function that takes a callable `func` and returns a `LoopNode` instance.
+
+    Notes:
+        - This function only creates a simple `LoopNode`.
+    """
+    def run_node(func: Callable, loop_node = loop_node) -> LoopNode:
+        return LoopNode(func, loop_node = loop_node)
     
     return run_node
 
