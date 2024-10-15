@@ -39,12 +39,23 @@ def multiply(a, b):
     return a * b
 
 chain = [add, divide] >> multiply
-chain.view(path="chain1.png")
+chain.show()
 ```
 
-![chain1](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain1.png)
+```mermaid
+flowchart TB;
+add13[add]:::rectangle;
+divide14[divide]:::rectangle;
+multiply15[multiply]:::rectangle;
+add13 --> multiply15;
+divide14 --> multiply15;
 
-### 11. ConditionalNode to check prime number
+classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
+classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
+classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray: 5;
+```
+
+### 2. ConditionalNode to check prime number
 
 ```python
 from streamgraph import node, IfNode
@@ -73,13 +84,26 @@ def is_not_prime():
 check_prime_node = IfNode(lambda x: x, true_node=is_prime, false_node=is_not_prime)
 
 chain = give_prime_num >> check_prime_node
-chain.view(path="chain2.png")
+chain.show()
 ```
 
-![chain2](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain2.png)
+```mermaid
+flowchart TB;
+give_prime_num12[give_prime_num]:::rectangle;
+lambda13{lambda}:::diamond;
+lambda13 -- True --> is_prime14;
+lambda13 -- False --> is_not_prime15;
+is_prime14[is_prime]:::rectangle;
+is_not_prime15[is_not_prime]:::rectangle;
+give_prime_num12 --> lambda13;
+
+classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
+classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
+classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray: 5;
+```
 
 
-### 12. Complex chain with nodes repeated several times
+### 3. Complex chain with nodes repeated several times
 
 ```python
 from streamgraph import node, IfNode, LoopNode
@@ -123,10 +147,63 @@ base_chain = plus_one >> plus_two >> [plus_one, plus_one] >> sum_all
 intermediate_chain = base_chain << plus_one << plus_two << sum_all
 loop_node = LoopNode(lambda x: x >= 100, loop_node=intermediate_chain)
 chain = plus_one >> [base_chain, plus_two] >> loop_node >> give_prime_num >> check_prime_node
-chain.view(path="chain3.png")
+chain.show()
 ```
 
-![chain3](https://raw.githubusercontent.com/lf-data/streamgraph/main/images/chain3.png)
+```mermaid
+flowchart TB;
+plus_one248[plus_one]:::rectangle;
+subgraph " ";
+plus_one251[plus_one]:::rectangle;
+plus_two252[plus_two]:::rectangle;
+plus_one251 --> plus_two252;
+plus_one254[plus_one]:::rectangle;
+plus_one255[plus_one]:::rectangle;
+plus_two252 --> plus_one254;
+plus_two252 --> plus_one255;
+sum_all256[sum_all]:::rectangle;
+plus_one254 --> sum_all256;
+plus_one255 --> sum_all256;
+end;
+plus_two257[plus_two]:::rectangle;
+plus_one248 --> plus_one251;
+plus_one248 --> plus_two257;
+subgraph " ";
+sum_all260[sum_all]:::rectangle;
+plus_two261[plus_two]:::rectangle;
+sum_all260 --> plus_two261;
+plus_one262[plus_one]:::rectangle;
+plus_two261 --> plus_one262;
+plus_one263[plus_one]:::rectangle;
+plus_one262 --> plus_one263;
+plus_two264[plus_two]:::rectangle;
+plus_one263 --> plus_two264;
+plus_one266[plus_one]:::rectangle;
+plus_one267[plus_one]:::rectangle;
+plus_two264 --> plus_one266;
+plus_two264 --> plus_one267;
+sum_all268[sum_all]:::rectangle;
+plus_one266 --> sum_all268;
+plus_one267 --> sum_all268;
+end;
+sum_all256 --> sum_all260;
+plus_two257 --> sum_all260;
+lambda258{lambda}:::diamond_loop;
+sum_all268 --> lambda258;
+lambda258 -. New Iteration .-> sum_all260;
+give_prime_num269[give_prime_num]:::rectangle;
+lambda258 --> give_prime_num269;
+lambda270{lambda}:::diamond;
+lambda270 -- True --> is_prime271;
+lambda270 -- False --> is_not_prime272;
+is_prime271[is_prime]:::rectangle;
+is_not_prime272[is_not_prime]:::rectangle;
+give_prime_num269 --> lambda270;
+
+classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
+classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
+classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray: 5;
+```
 
 
 
