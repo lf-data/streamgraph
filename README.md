@@ -58,7 +58,7 @@ classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dashar
 ### 2. ConditionalNode to check prime number
 
 ```python
-from streamgraph import node, IfNode
+from streamgraph import node, ifnode
 
 @node()
 def give_prime_num(n):
@@ -81,7 +81,10 @@ def is_prime():
 def is_not_prime():
     return "This number is not prime"
 
-check_prime_node = IfNode(lambda x: x, true_node=is_prime, false_node=is_not_prime)
+@ifnode(true_node=is_prime, false_node=is_not_prime)
+def check_prime_node(x):
+    return x
+
 
 chain = give_prime_num >> check_prime_node
 chain.show()
@@ -90,12 +93,12 @@ chain.show()
 ```mermaid
 flowchart TB;
 give_prime_num12[give_prime_num]:::rectangle;
-lambda13{lambda}:::diamond;
-lambda13 -- True --> is_prime14;
-lambda13 -- False --> is_not_prime15;
+check_prime_node13{check_prime_node}:::diamond;
+check_prime_node13 -- True --> is_prime14;
+check_prime_node13 -- False --> is_not_prime15;
 is_prime14[is_prime]:::rectangle;
 is_not_prime15[is_not_prime]:::rectangle;
-give_prime_num12 --> lambda13;
+give_prime_num12 --> check_prime_node13;
 
 classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
@@ -106,7 +109,7 @@ classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dashar
 ### 3. Complex chain with nodes repeated several times
 
 ```python
-from streamgraph import node, IfNode, LoopNode
+from streamgraph import node, ifnode, loopnode
 
 @node()
 def plus_one(num: int):
@@ -142,10 +145,17 @@ def is_prime():
 def is_not_prime():
     return "This number is not prime"
 
-check_prime_node = IfNode(lambda x: x, true_node=is_prime, false_node=is_not_prime)
+@ifnode(true_node=is_prime, false_node=is_not_prime)
+def check_prime_node(x):
+    return x
+
 base_chain = plus_one >> plus_two >> [plus_one, plus_one] >> sum_all
 intermediate_chain = base_chain << plus_one << plus_two << sum_all
-loop_node = LoopNode(lambda x: x >= 100, loop_node=intermediate_chain)
+
+@loopnode(loop_node=intermediate_chain)
+def loop_node(x):
+    return x >=100
+
 chain = plus_one >> [base_chain, plus_two] >> loop_node >> give_prime_num >> check_prime_node
 chain.show()
 ```
@@ -188,17 +198,17 @@ plus_one267 --> sum_all268;
 end;
 sum_all256 --> sum_all260;
 plus_two257 --> sum_all260;
-lambda258{lambda}:::diamond_loop;
-sum_all268 --> lambda258;
-lambda258 -. New Iteration .-> sum_all260;
+loop_node258{loop_node}:::diamond_loop;
+sum_all268 --> loop_node258;
+loop_node258 -. New Iteration .-> sum_all260;
 give_prime_num269[give_prime_num]:::rectangle;
-lambda258 --> give_prime_num269;
-lambda270{lambda}:::diamond;
-lambda270 -- True --> is_prime271;
-lambda270 -- False --> is_not_prime272;
+loop_node258 --> give_prime_num269;
+check_prime_node270{check_prime_node}:::diamond;
+check_prime_node270 -- True --> is_prime271;
+check_prime_node270 -- False --> is_not_prime272;
 is_prime271[is_prime]:::rectangle;
 is_not_prime272[is_not_prime]:::rectangle;
-give_prime_num269 --> lambda270;
+give_prime_num269 --> check_prime_node270;
 
 classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
