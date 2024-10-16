@@ -1,6 +1,8 @@
 import inspect
 from typing import Callable, Tuple, List, Dict
-
+import warnings
+from functools import wraps
+import warnings
 
 CSS_MERMAID = """
 
@@ -8,7 +10,41 @@ classDef rectangle fill:#89CFF0,stroke:#003366,stroke-width:2px;
 classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray: 5;
 classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray: 5;
 """
-    
+
+def _deprecated_method(msg):
+    """
+    Decorator that marks methods as deprecated with a custom warning message.
+
+    Args:
+        msg (str): The custom message to display with the deprecation warning.
+
+    Returns:
+        Callable: A decorator that wraps the original method.
+    """
+    def decorator(func):
+        """Actual decorator function that wraps the method."""
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """
+            Wrapper function that issues a `DeprecationWarning` when the decorated method is called.
+
+            Args:
+                *args: Positional arguments passed to the decorated method.
+                **kwargs: Keyword arguments passed to the decorated method.
+
+            Returns:
+                The result of calling the decorated method.
+            """
+            warnings.warn(
+                f"{func.__name__} is deprecated and will be removed in a future version: {msg}",
+                category=DeprecationWarning,
+                stacklevel=2
+            )
+            return func(*args, **kwargs)
+        
+        return wrapper
+    return decorator
+
 def _id_counter():
     """A simple generation function to generate sequential integer IDs.
     

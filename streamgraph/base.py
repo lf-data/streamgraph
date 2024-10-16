@@ -1,4 +1,4 @@
-from .utils import _input_args, _is_positional_or_keyword, _get_args, _get_docs, _id_counter
+from .utils import _input_args, _is_positional_or_keyword, _get_args, _get_docs, _id_counter, _deprecated_method
 from .utils import Callable, List, Dict, Tuple, CSS_MERMAID
 from typing import Any, Optional, Union
 from functools import lru_cache
@@ -553,7 +553,7 @@ class Chain(Base):
         else:
             raise ValueError("The name be 'str'")
 
-    def add_node(self, other, before: bool) ->Base:
+    def add_node(self, other, before: bool) -> 'Chain':
         """
         Adds a node to the chain, either before or after the existing nodes.
 
@@ -574,7 +574,7 @@ class Chain(Base):
         return chain
         
     
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Any:
         """
         Executes the chain by sequentially calling each node with the provided arguments.
 
@@ -606,8 +606,9 @@ class Chain(Base):
         except Exception as e:
             logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
-
-    def view(self, path: str, direction: str = "TB"):
+    
+    @_deprecated_method(msg="This method is replace by 'save' method.")
+    def view(self, path: str, direction: str = "TB") -> None:
         """
         Generates a visual representation of the chain using Mermaid and saves it as a PNG image.
 
@@ -630,7 +631,30 @@ class Chain(Base):
         else:
             print(f"Failed to generate PNG image. Status code: {response.status_code}")
 
-    def show(self, direction: str = "TB"):
+    def save(self, path: str, direction: str = "TB") -> None:
+        """
+        Generates a visual representation of the chain using Mermaid and saves it as a PNG image.
+
+        Args:
+            path (str): The file path where the PNG image will be saved.
+            direction (str): The direction of the flowchart ('TB' for top-bottom, 'LR' for left-right).
+        
+        Raises:
+            Exception: If the image generation fails.
+        """
+        mg = "\n".join(_create_mermaid(self._nodes)[1])
+        mg = f"flowchart {direction};\n{mg}{CSS_MERMAID}"
+        graphbytes = mg.encode("utf8")
+        base64_bytes = base64.urlsafe_b64encode(graphbytes)
+        base64_string = base64_bytes.decode("ascii")
+        response = requests.get("https://mermaid.ink/img/" + base64_string)
+        if response.status_code == 200:
+            with open(path, 'wb') as file:
+                file.write(response.content)
+        else:
+            print(f"Failed to generate PNG image. Status code: {response.status_code}")
+
+    def show(self, direction: str = "TB") -> str:
         """
         Generates a visual representation of the chain using Mermaid.
 
@@ -638,7 +662,7 @@ class Chain(Base):
             direction (str): The direction of the flowchart ('TB' for top-bottom, 'LR' for left-right).
         """
         mg = "\n".join(_create_mermaid(self._nodes)[1])
-        mg = f"flowchart {direction};\n" + mg + CSS_MERMAID
+        mg = f"flowchart {direction};\n{mg}{CSS_MERMAID}"
         return mg
 
     def get_node_data(self) -> List[Dict[str, Any]]:
@@ -751,7 +775,7 @@ class Layer(Base):
         self._is_dict = True if isinstance(nodes, dict) else False
         self.id = self.name + str(next(counter))
 
-    def add_node(self, other, before: bool) ->Base:
+    def add_node(self, other, before: bool) ->'Chain':
         """
         Adds a node to the chain, either before or after the current layer.
 
@@ -870,7 +894,7 @@ class Node(Base):
         self.func = func
         self.id = self.name + str(next(counter))
 
-    def add_node(self, other, before: bool) ->Base:
+    def add_node(self, other, before: bool) ->'Chain':
         """
         Adds a node to the chain, either before or after the current node.
 
