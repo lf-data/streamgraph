@@ -576,8 +576,8 @@ class Chain(Base):
             cself.name = other
             cself.id = cself.name + str(next(counter))
             return cself
-        else:
-            raise ValueError("The name be 'str'")
+
+        raise ValueError("The name be 'str'")
 
     def add_node(self, other: Any, before: bool) -> 'Chain':
         """
@@ -622,9 +622,9 @@ class Chain(Base):
                     x = node_run(*args, **kwargs)
                 else:
                     if isinstance(x, (list, tuple)):
-                        x = node_run(*x)
+                        x = node_run(*list(x))
                     elif isinstance(x, dict):
-                        x = node_run(**x)
+                        x = node_run(**dict(x))
                     else:
                         x = node_run(x)
             logger.info("End Chain", extra={"id": self.id, "name_class": self.name})
