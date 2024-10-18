@@ -27,7 +27,6 @@ structure with conditional and looping nodes, making
 it possible to create dynamic, branching, and iterative processes.
 """
 
-from .components import json
 from .components import counter,  logger, Any
 from .components import Callable, Base, Node
 from .components import deepcopy, _input_args, _check_input_node, _reset_id
@@ -109,6 +108,7 @@ class IfNode(Node):
             false_node (Base): A deep copy of the false_node with a new unique ID.
         """
         super().__init__(func)
+        self._node_type = "IfNode"
         _check_input_node([true_node, false_node])
         true_node = deepcopy(true_node)
         true_node.id = true_node.name + str(next(counter))
@@ -159,21 +159,6 @@ class IfNode(Node):
             logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
 
-    def __repr__(self) ->str:
-        """
-        Returns a string representation of the if node, including its 
-        ID, arguments, name, and description.
-
-        Returns:
-            str: A JSON string representing the node's ID, arguments, name, and description.
-        """
-        json_repr = json.dumps({
-            "id": self.id,
-            "args": self.args,
-            "name": self.name
-        })
-        return f"IfNode({json_repr})"
-
 
 class LoopNode(Node):
     """
@@ -221,6 +206,7 @@ class LoopNode(Node):
                 if present, is reset with new IDs.
         """
         super().__init__(condition_func)
+        self._node_type = "LoopNode"
         _check_input_node([loop_node])
         loop_node = deepcopy(loop_node)
         loop_node.id = loop_node.name + str(next(counter))
@@ -277,16 +263,3 @@ class LoopNode(Node):
         except Exception as e:
             logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
-
-    def __repr__(self) -> str:
-        """
-        Returns a string representation of the loop node, including its ID and name.
-
-        Returns:
-            str: A JSON string representing the node's ID and name.
-        """
-        json_repr = json.dumps({
-            "id": self.id,
-            "name": self.name
-        })
-        return f"LoopNode({json_repr})"

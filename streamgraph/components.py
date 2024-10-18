@@ -1,4 +1,5 @@
-"""This module defines a set of classes and decorators 
+"""
+This module defines a set of classes and decorators 
 for constructing and connecting computational chains, 
 layers, and nodes, along with several utility functions 
 for managing the chain and its graphical representation. 
@@ -921,6 +922,7 @@ class Node(Base):
         self.args = _get_args(func)
         self.func = func
         self.id = self.name + str(next(counter))
+        self._node_type = "Node"
 
     def add_node(self, other, before: bool) ->'Chain':
         """
@@ -986,4 +988,4 @@ class Node(Base):
             "name": self.name,
             "description": self.description 
         })
-        return f"Node({json_repr})"
+        return f"{self._node_type}({json_repr})"
