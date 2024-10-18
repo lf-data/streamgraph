@@ -53,12 +53,6 @@ def _id_counter():
     Returns:
         int: Return the integer IDs.
 
-    Example:
-        >>> _id_counter()
-        1
-        >>> _id_counter()
-        2
-
     Notes:
         - The function use "yield" instead of "return" in order 
         to remember the previous value of counter variable.
@@ -88,15 +82,6 @@ def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
         Dict: A dictionary mapping parameter names to their corresponding 
               values from `args` and `kwargs`. The dictionary
               includes both positional and keyword arguments as required by the node function.
-
-    Example:
-        >>> def example_func(a, b, c):
-        ...     pass
-        >>> _input_args((1, 2), {'c': 3}, ['a', 'b', 'c'])
-        {'a': 1, 'b': 2, 'c': 3}
-
-        >>> _input_args((), {'a': 1, 'b': 2}, ['a', 'b'])
-        {'a': 1, 'b': 2}
 
     Notes:
         - The function first maps keyword arguments to their corresponding parameter names.
@@ -139,17 +124,6 @@ def _is_positional_or_keyword(func: Callable) ->bool:
         bool: `True` if the callable accepts variadic 
         positional or keyword arguments; otherwise, `False`.
 
-    Example:
-        >>> def func_with_args(a, b, *args, **kwargs):
-        ...     pass
-        >>> _is_positional_or_keyword(func_with_args)
-        True
-
-        >>> def func_without_args(a, b):
-        ...     pass
-        >>> _is_positional_or_keyword(func_without_args)
-        False
-
     Notes:
         - The function uses the `inspect` module to retrieve and analyze the function's signature.
         - Variadic positional arguments are indicated by `param.VAR_POSITIONAL`.
@@ -182,17 +156,6 @@ def _get_args(func: Callable) ->List:
                    `arg1`, `arg2` (as variadic positional), 
                    and `arg3` (as variadic keyword) arguments.
 
-    Example:
-        >>> def example_func(a, b, *args, **kwargs):
-        ...     pass
-        >>> _get_args(example_func)
-        ['a', 'b', '*args', '**kwargs']
-
-        >>> def another_func(x, y, z=3, *varargs, **kwargs):
-        ...     pass
-        >>> _get_args(another_func)
-        ['x', 'y', 'z', '*varargs', '**kwargs']
-
     Notes:
         - The function uses the `inspect` module to retrieve and process the function signature.
         - Variadic positional arguments (`*args`) are denoted with a trailing '*'.
@@ -223,18 +186,6 @@ def _get_docs(func: Callable) -> str:
 
     Returns:
         str: The docstring of the callable object. Returns `None` if no docstring is present.
-
-    Example:
-        >>> def sample_function(param1, param2):
-        ...     \"\"\"This is a sample function that does something.\"\"\"
-        ...     pass
-        >>> _get_docs(sample_function)
-        'This is a sample function that does something.'
-
-        >>> def another_function():
-        ...     pass
-        >>> _get_docs(another_function)
-        None
 
     Notes:
         - The function uses `inspect.getdoc()` to access the docstring.

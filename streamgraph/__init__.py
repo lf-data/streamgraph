@@ -4,7 +4,8 @@ from uuid import uuid4
 from datetime import datetime, timezone
 from pythonjsonlogger import jsonlogger
 from colorama import init, Fore, Style
-from .base import Layer, Node, Chain, IfNode, LoopNode, node, ifnode, loopnode
+from .components import Layer, Node, Chain, node
+from .conditional_nodes import IfNode, LoopNode, ifnode, loopnode
 
 
 __author__ = 'Francesco Lorè'

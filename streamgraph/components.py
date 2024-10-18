@@ -1,3 +1,61 @@
+"""This module defines a set of classes and decorators 
+for constructing and connecting computational chains, 
+layers, and nodes, along with several utility functions 
+for managing the chain and its graphical representation. 
+The main classes include Chain, Layer, Node,  
+all extending from a common base class, Base. 
+This base class enables the use of `>>` and `<<` operators 
+to easily connect nodes, chains, and layers.
+
+Classes:
+    Base: A foundational class that defines connection 
+          behavior using the `>>` and `<<` operators, allowing 
+          intuitive chaining and layering of nodes and layers.
+    Chain: Represents a sequence of layers or nodes connected together. 
+           It is responsible for managing 
+           the overall structure and flow of the chain.
+    Layer: Represents a collection of nodes, typically connected 
+           together to form a more complex operation 
+           or computational layer.
+    Node: The basic unit of computation in the chain or layer. 
+          A Node represents a single operation or step 
+          and can be connected to other nodes or layers using `>>` and `<<`.
+
+Decorators:
+    @node: A decorator to create a Node from a function. 
+           This decorator accepts a function and wraps it inside 
+           a Node class, allowing it to be connected 
+           to other nodes or layers using `>>` and `<<`.
+
+Utility Functions:
+    _reset_id: Resets the unique IDs for all nodes in the chain. 
+               This is useful for reinitializing the state 
+               of the chain or nodes when reusing or regenerating chains.
+    
+    _create_mermaid: Generates a Mermaid-compatible code block 
+                     that represents the chain and its nodes as a 
+                     graphical flowchart. This function is useful 
+                     for visualizing the structure of the chain.
+
+    _check_input_node: Verifies that the input nodes or objects are 
+                       valid instances of the Chain, Layer, Node, 
+                       IfNode, or LoopNode classes. This ensures that 
+                       only compatible components are connected 
+                       together in the chain.
+
+    _convert_paralle_node: Converts a list of Base-class objects (e.g., nodes or layers) 
+                           into a Layer object 
+                           for parallel execution. This is useful for transforming 
+                           collections of nodes into 
+                           a single layer that can be processed in parallel.
+
+This module is designed to create flexible computational 
+pipelines with readable and intuitive syntax. 
+It supports conditional execution, looping constructs, 
+and offers utility functions for managing node IDs, 
+validating inputs, and generating graphical representations of the chains.
+"""
+
 import logging
 import json
 import os
@@ -19,7 +77,6 @@ lru_cache(maxsize=2)
 def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
     """
     Resets the IDs of nodes and their nested structures to new unique values.
-
     This function takes a collection of nodes, either a list, dictionary, 
     or tuple, and generates a new unique ID for
     each node within the collection. It also recursively processes nested 
@@ -39,19 +96,8 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
 
     Notes:
         - Uses LRU caching with a maximum size of 2 to optimize performance for repeated inputs.
-        - Recursively processes nested nodes, including those within 
-          `IfNode`, `LoopNode`, `Chain`, and `Layer`.
+        - Recursively processes nested nodes, including those within `Chain`, and `Layer`.
         - Ensures that each node and its nested structures receive a unique ID.
-
-    Examples:
-        >>> _reset_id([node1, node2])
-        [Node1 with new ID, Node2 with new ID]
-
-        >>> _reset_id({'key1': node1, 'key2': node2})
-        {'key1': Node1 with new ID, 'key2': Node2 with new ID}
-        
-        >>> _reset_id((node1, node2))
-        (Node1 with new ID, Node2 with new ID)
     """
     if isinstance(nodes, dict):
         nodes = {node: deepcopy(nodes[node]) for node in nodes}
@@ -65,7 +111,9 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
 
         assert isinstance(node_to_reset, Base), "The items in 'nodes' must be Base instances"
         node_to_reset.id = node_to_reset.name + str(next(counter))
-        if isinstance(node_to_reset, IfNode):
+        if isinstance(node_to_reset, Base) \
+            and hasattr(node_to_reset, "true_node") \
+                and hasattr(node_to_reset, "false_node"):
             node_to_reset.true_node = deepcopy(node_to_reset.true_node)
             node_to_reset.true_node.id = node_to_reset.true_node.name + str(next(counter))
             if hasattr(node_to_reset.true_node, "_nodes"):
@@ -75,7 +123,7 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
             node_to_reset.false_node.id = node_to_reset.false_node.name + str(next(counter))
             if hasattr(node_to_reset.false_node, "_nodes"):
                 node_to_reset.false_node._nodes = _reset_id(node_to_reset.false_node._nodes)
-        elif isinstance(node_to_reset, LoopNode):
+        elif isinstance(node_to_reset, Base) and hasattr(node_to_reset, "loop_node"):
             node_to_reset.loop_node = deepcopy(node_to_reset.loop_node)
             node_to_reset.loop_node.id = node_to_reset.loop_node.name + str(next(counter))
             if hasattr(node_to_reset.loop_node, "_nodes"):
@@ -120,15 +168,6 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
         - Converts conditional nodes into diamond-shaped Mermaid nodes and 
           other nodes into rectangle-shaped nodes.
         - Processes nested layers and chains, including generating subgraphs for chains.
-
-    Examples:
-        >>> _create_mermaid([node1, node2, conditional_node])
-        (first_node_list, ['node1[Node 1]:::rectangle;', 'node2[Node 2]:::rectangle;', 
-        'conditional_node{{If Node}}:::diamond;'], last_node_list)
-        
-        >>> _create_mermaid({'key1': node1, 'key2': [node2, node3]})
-        (first_node_list, ['node1[Node 1]:::rectangle;', 'node2[Node 2]:::rectangle;', 
-        'node3[Node 3]:::rectangle;'], last_node_list)
     """
     lines = []
     first_node = None
@@ -138,7 +177,9 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
     for node_mermaid in nodes:
         assert isinstance(node_mermaid, Base), "The items in 'nodes' must be Base instances"
         if isinstance(node_mermaid, Node):
-            if isinstance(node_mermaid, IfNode):
+            if isinstance(node_mermaid, Base) \
+                and hasattr(node_mermaid, "true_node") \
+                    and hasattr(node_mermaid, "false_node"):
                 lines.append(f"{node_mermaid.id}{{{node_mermaid.name}}}:::diamond;")
 
                 if hasattr(node_mermaid.true_node ,"_nodes"):
@@ -181,7 +222,8 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
                     first_node = [node_mermaid]
 
                 last_node = last_node_false + last_node_true
-            elif isinstance(node_mermaid, LoopNode):
+            elif isinstance(node_mermaid, Base) \
+                and hasattr(node_mermaid, "loop_node"):
                 if hasattr(node_mermaid.loop_node ,"_nodes"):
                     true_nodes = node_mermaid.loop_node._nodes
                 else:
@@ -292,21 +334,6 @@ def _check_input_node(inputs: Union[List, Tuple, Dict, "Base"]) ->None:
         - Uses LRU caching with a maximum size of 2 to optimize performance for repeated inputs.
         - The function assumes that all elements in the nested structures 
           must be instances of `Base`.
-
-    Examples:
-        >>> _check_input_node([node1, [node2, node3]])
-        # No exception raised, as all elements are `Base` instances or nested collections of `Base`.
-
-        >>> _check_input_node({'key1': node1, 'key2': [node2, node3]})
-        # No exception raised, as all elements are `Base` instances or nested collections of `Base`.
-
-        >>> _check_input_node(node1)
-        # No exception raised, as the input is a single `Base` instance.
-
-        >>> _check_input_node([node1, "invalid"])
-        Traceback (most recent call last):
-            ...
-        TypeError: Only "Base", or lists of this class can be used as inputs
     """
     if isinstance(inputs, (list, tuple, dict)):
         for inp in inputs:
@@ -341,16 +368,6 @@ def _convert_parallel_node(inputs: Union[List, Tuple, Dict, "Base"]) ->Any:
         - Uses LRU caching with a maximum size of 2 to optimize performance for repeated inputs.
         - The function assumes that the `Layer` class is 
         capable of handling lists, tuples, and dictionaries as input.
-
-    Examples:
-        >>> _convert_parallel_node([node1, [node2, node3]])
-        Layer([node1, Layer([node2, node3])])
-        
-        >>> _convert_parallel_node({'key1': node1, 'key2': [node2, node3]})
-        Layer({'key1': node1, 'key2': Layer([node2, node3])})
-        
-        >>> _convert_parallel_node(node1)
-        node1
     """
     if isinstance(inputs, Base):
         return inputs
@@ -380,40 +397,6 @@ def node() -> "Node":
     """
     def run_node(func: Callable) -> Node:
         return Node(func)
-
-    return run_node
-
-def ifnode(true_node: "Base", false_node: "Base") -> "IfNode":
-    """
-    Factory function for creating a `IfNode` instance.
-
-    This function wraps a callable function into a `IfNode`.
-
-    Returns:
-        Callable: A function that takes a callable `func` and returns a `IfNode` instance.
-
-    Notes:
-        - This function only creates a simple `IfNode`.
-    """
-    def run_node(func: Callable, true_node = true_node, false_node = false_node) -> IfNode:
-        return IfNode(func, true_node=true_node, false_node=false_node)
-
-    return run_node
-
-def loopnode(loop_node: "Base") -> "LoopNode":
-    """
-    Factory function for creating a `LoopNode` instance.
-
-    This function wraps a callable function into a `LoopNode`.
-
-    Returns:
-        Callable: A function that takes a callable `func` and returns a `LoopNode` instance.
-
-    Notes:
-        - This function only creates a simple `LoopNode`.
-    """
-    def run_node(func: Callable, loop_node = loop_node) -> LoopNode:
-        return LoopNode(func, loop_node = loop_node)
 
     return run_node
 
@@ -707,7 +690,7 @@ class Chain(Base):
             node_data = {
                 "name": getattr(node_get, 'name', None),
                 "function": getattr(node_get, '__call__', None).__name__ \
-                    if isinstance(node_get, (Node, IfNode)) else None,
+                    if isinstance(node_get, Node) else None,
                 "id": getattr(node_get, 'id', None),
                 "class_type": type(node_get).__name__
             }
@@ -1004,229 +987,3 @@ class Node(Base):
             "description": self.description 
         })
         return f"Node({json_repr})"
-
-
-class IfNode(Node):
-    """
-    A class representing a if node in a chain, which executes one of 
-    two nodes based on a boolean condition.
-
-    This class extends the `Node` class to include conditional logic. 
-    It allows for branching in a chain by 
-    executing either a `true_node` or a `false_node` depending on 
-    the boolean result of the function.
-
-    Attributes:
-        true_node (Base): The node to execute if the condition evaluates to True.
-        false_node (Base): The node to execute if the condition evaluates to False.
-
-    Methods:
-        __init__(func, true_node, false_node):
-            Initializes a IfNode instance with a callable function 
-            and two possible nodes for execution.
-        
-        __call__(*args, **kwargs):
-            Executes the conditional logic by evaluating the function 
-            and executing the appropriate node.
-        
-        __repr__():
-            Returns a string representation of the if node, including 
-            its ID, arguments, name, and description.
-    """
-    def __init__(self, func: Callable,
-                 true_node: Base,
-                 false_node: Base):
-        """
-        Initializes a IfNode instance with a callable function and two possible nodes for execution.
-
-        Args:
-            func (Callable): The function that determines the condition for branching.
-            true_node (Union[Base]): The node to execute if the function's result is True.
-            false_node (Union[Base]): The node to execute if the function's result is False.
-
-        Attributes:
-            true_node (Base): A deep copy of the true_node with a new unique ID.
-            false_node (Base): A deep copy of the false_node with a new unique ID.
-        """
-        super().__init__(func)
-        _check_input_node([true_node, false_node])
-        true_node = deepcopy(true_node)
-        true_node.id = true_node.name + str(next(counter))
-        if hasattr(true_node, "_nodes"):
-            true_node._nodes = _reset_id(true_node._nodes)
-
-        false_node = deepcopy(false_node)
-        false_node.id = false_node.name + str(next(counter))
-        if hasattr(false_node, "_nodes"):
-            false_node._nodes = _reset_id(false_node._nodes)
-
-        self.true_node = true_node
-        self.false_node = false_node
-
-    def __call__(self, *args, **kwargs)-> Any:
-        """
-        Executes the conditional logic by evaluating the function 
-        and executing the appropriate node.
-
-        Args:
-            *args: Positional arguments to pass to the function and nodes.
-            **kwargs: Keyword arguments to pass to the function and nodes.
-
-        Returns:
-            Any: The result of executing either the true_node or the false_node 
-            based on the function's boolean result.
-
-        Raises:
-            AssertionError: If the function's output is not a boolean.
-            Exception: If an error occurs during the execution of the function or nodes.
-        """
-        try:
-            logger.info("Start IfNode", extra={"id": self.id, "name_class": self.name})
-            logger.info("Get bool value", extra={"id": self.id, "name_class": self.name})
-            if not self.positional_or_keyword:
-                logger.info("Select input args", extra={"id": self.id, "name_class": self.name})
-                inp_args = _input_args(args, kwargs, node_args=self.args)
-                res = self.func(**inp_args)
-                assert isinstance(res, bool), "The output of IfNode's function must be boolean"
-            else:
-                res = self.func(*args, **kwargs)
-                assert isinstance(res, bool), "The output of IfNode's function must be boolean"
-
-            logger.info("Execute %s Node", str(res), extra={"id": self.id, "name_class": self.name})
-            logger.info("End IfNode", extra={"id": self.id, "name_class": self.name})
-            return  self.true_node(*args, **kwargs) if res else self.false_node(*args, **kwargs)
-        except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
-            raise
-
-    def __repr__(self) ->str:
-        """
-        Returns a string representation of the if node, including its 
-        ID, arguments, name, and description.
-
-        Returns:
-            str: A JSON string representing the node's ID, arguments, name, and description.
-        """
-        json_repr = json.dumps({
-            "id": self.id,
-            "args": self.args,
-            "name": self.name
-        })
-        return f"IfNode({json_repr})"
-
-
-class LoopNode(Node):
-    """
-    A class representing a loop node in a chain that executes a specified 
-    node repeatedly until a condition is met.
-
-    This class extends the `Node` class to include looping logic. 
-    It executes a `loop_node` in each iteration until 
-    the `condition_func` returns True. The loop continues 
-    to execute `loop_node` with the result of the previous 
-    execution until the condition is satisfied.
-
-    Attributes:
-        loop_node (Base): The node to execute in each iteration of the loop.
-        condition_func (Callable): A function that determines when to stop the loop. 
-        It is called with the result of 
-            the `loop_node` execution and should return a boolean value.
-
-    Methods:
-        __init__(condition_func, loop_node):
-            Initializes a LoopNode instance with a callable function
-            and a node to execute in the loop.
-
-        __call__(*args, **kwargs):
-            Executes the loop node repeatedly until the condition function returns True.
-
-        __repr__():
-            Returns a string representation of the loop node, including its ID and name.
-    """
-
-    def __init__(self, condition_func: Callable, loop_node: Base) ->None:
-        """
-        Initializes a LoopNode instance with a callable function and a node to execute in the loop.
-
-        Args:
-            condition_func (Callable): A function that receives the result of the 
-            `loop_node` and returns a boolean 
-                indicating whether the loop should continue or stop.
-            loop_node (Base): The node to execute in each iteration of the loop. 
-            This node is executed repeatedly until `condition_func` returns True.
-
-        Attributes:
-            loop_node (Base): A deep copy of the `loop_node` with a new unique ID. 
-            The node's `_nodes` attribute, 
-                if present, is reset with new IDs.
-        """
-        super().__init__(condition_func)
-        _check_input_node([loop_node])
-        loop_node = deepcopy(loop_node)
-        loop_node.id = loop_node.name + str(next(counter))
-        if hasattr(loop_node, "_nodes"):
-            loop_node._nodes = _reset_id(loop_node._nodes)
-
-        self.loop_node = loop_node
-
-    def __call__(self, *args, **kwargs) -> Any:
-        """
-        Executes the loop node repeatedly until the condition function returns True.
-
-        Args:
-            *args: Positional arguments to pass to the loop node.
-            **kwargs: Keyword arguments to pass to the loop node.
-
-        Returns:
-            Any: The result of the last execution of `loop_node` when the condition is met.
-
-        Raises:
-            AssertionError: If the result of `condition_func` is not a boolean.
-            Exception: If an error occurs during the execution 
-            of the loop node or the condition function.
-        """
-        try:
-            logger.info("Start LoopNode", extra={"id": self.id, "name_class": self.name})
-            iteration = 0
-            condition_met = False
-
-            while not condition_met:
-                logger.info("Iteration %s", str(iteration),
-                            extra={"id": self.id, "name_class": self.name})
-                if iteration == 0:
-                    result = self.loop_node(*args, **kwargs)
-                else:
-                    if isinstance(result, (list, tuple)):
-                        result = self.loop_node(*result)
-                    elif isinstance(result, dict):
-                        result = self.loop_node(**result)
-                    else:
-                        result = self.loop_node(result)
-
-                if isinstance(result, (list, tuple)):
-                    condition_met = self.func(*result)
-                elif isinstance(result, dict):
-                    condition_met = self.func(**result)
-                else:
-                    condition_met = self.func(result)
-                iteration += 1
-
-            logger.info("End LoopNode", extra={"id": self.id, "name_class": self.name})
-            return result
-
-        except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
-            raise
-
-    def __repr__(self) -> str:
-        """
-        Returns a string representation of the loop node, including its ID and name.
-
-        Returns:
-            str: A JSON string representing the node's ID and name.
-        """
-        json_repr = json.dumps({
-            "id": self.id,
-            "name": self.name
-        })
-        return f"LoopNode({json_repr})"
