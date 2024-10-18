@@ -1,3 +1,49 @@
+"""
+This module initializes logging functionality and provides key components 
+for chain-based systems, such as Nodes, Layers, and Chains. 
+It also imports specialized nodes for conditional logic and looping.
+
+Classes:
+    - LogColors: A class defining color constants for logging messages using `colorama`.
+    - ColoredJsonFormatter: A custom JSON log formatter that outputs 
+      colorized log records based on their severity level.
+
+Functions:
+    - add_fields(log_record, record, message_dict): Adds extra fields
+      (e.g., timestamp, level, trace ID) to log records.
+    - is_private_key(key): Checks if a log attribute is private (prefixed with "_").
+    - set_extra_keys(record, log_record, reserved): Adds extra fields 
+      from log records, filtering out reserved and private attributes.
+    - format(record): Formats log records and applies color 
+      based on log level.
+
+Attributes:
+    - __author__: Author information.
+    - __email__: Contact email of the author.
+    - __status__: Current status of the project (Development).
+    - __version__: Module version (0.1.0).
+    - DATE_FORMAT_TIMEZONE: A constant defining the datetime format used in logs.
+    - logger: The logger object configured with a `ColoredJsonFormatter` 
+      to provide colorized JSON logs.
+
+External Dependencies:
+    - colorama: For terminal colorization.
+    - python-json-logger: For logging in JSON format.
+
+Usage:
+    - The logger is initialized with a custom formatter that outputs JSON 
+      log records colorized by severity level.
+    - `LogColors` provides convenient constants for applying colors 
+      to log messages in different contexts.
+    - Chain components (`Layer`, `Node`, `Chain`) and conditional 
+      nodes (`IfNode`, `LoopNode`) are made available for use in higher-level modules.
+
+Notes:
+    - The logging system can be extended or replaced by other handlers as needed.
+    - Use `__all__` to expose core chain components and utility functions for external use.
+"""
+
+
 import logging
 import json
 from uuid import uuid4

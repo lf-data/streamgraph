@@ -1,3 +1,41 @@
+"""
+This module contains utility functions and decorators 
+used across the chain-building framework. These utilities 
+handle various tasks such as argument mapping, function 
+signature inspection, and generating unique identifiers.
+
+Functions:
+    - _deprecated_method(msg): A decorator that marks methods 
+                               as deprecated with a custom warning message.
+    - _id_counter(): A generator function for 
+                     sequential integer IDs starting from 1.
+    - _input_args(args, kwargs, node_args): Maps input arguments to the expected 
+                                            parameter names of a node function.
+    - _is_positional_or_keyword(func): Determines if a callable object 
+                                       accepts variadic positional or keyword arguments.
+    - _get_args(func): Extracts and returns a list of argument names 
+                       (including variadic args) from a callable function's signature.
+    - _get_docs(func): Retrieves the docstring of a callable object.
+    
+Variables:
+    - CSS_MERMAID: A string containing CSS styles for visualizing 
+                   chains in Mermaid diagrams. It defines different
+                   styles for representing nodes 
+                   (e.g., rectangle, diamond, loop) in visual flows.
+                   
+Usage:
+    These utility functions are primarily used for 
+    inspecting and manipulating callable objects, handling 
+    input arguments for nodes, and providing support 
+    for deprecated methods and custom ID generation.
+
+Notes:
+    - The `inspect` module is heavily used to work with function signatures and documentation.
+    - These utilities are foundational and are meant to be used 
+      by the higher-level chain-building components.
+"""
+
+
 from typing import Callable, Tuple, List, Dict
 import warnings
 from functools import wraps
