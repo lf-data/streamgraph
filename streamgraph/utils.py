@@ -1,8 +1,7 @@
-import inspect
 from typing import Callable, Tuple, List, Dict
 import warnings
 from functools import wraps
-import warnings
+import inspect
 
 CSS_MERMAID = """
 
@@ -41,7 +40,7 @@ def _deprecated_method(msg):
                 stacklevel=2
             )
             return func(*args, **kwargs)
-        
+
         return wrapper
     return decorator
 
@@ -61,7 +60,8 @@ def _id_counter():
         2
 
     Notes:
-        - The function use "yield" instead of "return" in order to remember the previous value of counter variable.
+        - The function use "yield" instead of "return" in order 
+        to remember the previous value of counter variable.
     """
     counter = 1
     while True:
@@ -72,17 +72,21 @@ def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
     """
     Maps input arguments and keyword arguments to the expected parameter names of a node function.
 
-    This function creates a dictionary that maps the positional and keyword arguments to the expected parameter names
-    of a node function. It takes into account the order and availability of arguments to ensure that all required
+    This function creates a dictionary that maps the positional 
+    and keyword arguments to the expected parameter names
+    of a node function. It takes into account the order and 
+    availability of arguments to ensure that all required
     parameters are properly assigned.
 
     Args:
         args (Tuple): A tuple of positional arguments provided to the node function.
         kwargs (Dict): A dictionary of keyword arguments provided to the node function.
-        node_args (List): A list of parameter names expected by the node function, in the order they are defined.
+        node_args (List): A list of parameter names expected 
+        by the node function, in the order they are defined.
 
     Returns:
-        Dict: A dictionary mapping parameter names to their corresponding values from `args` and `kwargs`. The dictionary
+        Dict: A dictionary mapping parameter names to their corresponding 
+              values from `args` and `kwargs`. The dictionary
               includes both positional and keyword arguments as required by the node function.
 
     Example:
@@ -96,37 +100,44 @@ def _input_args(args: Tuple, kwargs: Dict, node_args: List) ->Dict:
 
     Notes:
         - The function first maps keyword arguments to their corresponding parameter names.
-        - If there are positional arguments left after mapping keyword arguments, they are assigned to the remaining parameter names.
-        - The function ensures that the number of positional arguments does not exceed the number of remaining parameter names.
-        - If there are fewer positional arguments than remaining parameter names, only the available positional arguments are used.
+        - If there are positional arguments left after mapping 
+        keyword arguments, they are assigned to the remaining parameter names.
+        - The function ensures that the number of positional 
+        arguments does not exceed the number of remaining parameter names.
+        - If there are fewer positional arguments than remaining 
+        parameter names, only the available positional arguments are used.
     """
     output_args = {node_args[node_args.index(kw)]: kwargs[kw] for kw in kwargs if kw in node_args}
     if len(args) == 0:
         return output_args
-    
+
     loss_node_arg = [x for x in node_args if x not in output_args]
     if len(loss_node_arg) > 0:
         if len(args) > len(loss_node_arg):
             args = args[:len(loss_node_arg)]
         elif len(args) < len(loss_node_arg):
             loss_node_arg = loss_node_arg[:len(args)]
-        
+
         output_args |= {y:x for x, y in zip(args, loss_node_arg)}
     return output_args
 
 def _is_positional_or_keyword(func: Callable) ->bool:
     """
-    Determines whether a callable object (e.g., function) accepts variadic positional or keyword arguments.
+    Determines whether a callable object (e.g., function) 
+    accepts variadic positional or keyword arguments.
 
-    This function inspects the signature of the provided callable object and checks if it includes parameters
-    that are variadic positional (`*args`) or variadic keyword arguments (`**kwargs`). If such parameters are found,
+    This function inspects the signature of the provided 
+    callable object and checks if it includes parameters
+    that are variadic positional (`*args`) or variadic 
+    keyword arguments (`**kwargs`). If such parameters are found,
     the function returns `True`; otherwise, it returns `False`.
 
     Args:
         func (Callable): The callable object (function) to be inspected.
 
     Returns:
-        bool: `True` if the callable accepts variadic positional or keyword arguments; otherwise, `False`.
+        bool: `True` if the callable accepts variadic 
+        positional or keyword arguments; otherwise, `False`.
 
     Example:
         >>> def func_with_args(a, b, *args, **kwargs):
@@ -152,18 +163,23 @@ def _is_positional_or_keyword(func: Callable) ->bool:
 
 def _get_args(func: Callable) ->List:
     """
-    Extracts and returns a list of argument names and their types from the signature of a callable function.
+    Extracts and returns a list of argument names and their 
+    types from the signature of a callable function.
 
-    This function inspects the signature of a given callable object (such as a function) and generates a list
-    of argument names in the order they appear. It includes special markers for variadic positional (`*args`) and 
+    This function inspects the signature of a given callable 
+    object (such as a function) and generates a list
+    of argument names in the order they appear. 
+    It includes special markers for variadic positional (`*args`) and 
     keyword arguments (`**kwargs`).
 
     Args:
         func (Callable): The callable object (function) from which to extract argument information.
 
     Returns:
-        List[str]: A list of argument names, including special markers for variadic arguments. 
-                   For example, `["arg1", "arg2*", "arg3**"]` indicates `arg1`, `arg2` (as variadic positional), 
+        List[str]: A list of argument names, including special markers 
+                   for variadic arguments. 
+                   For example, `["arg1", "arg2*", "arg3**"]` indicates 
+                   `arg1`, `arg2` (as variadic positional), 
                    and `arg3` (as variadic keyword) arguments.
 
     Example:
@@ -197,8 +213,10 @@ def _get_docs(func: Callable) -> str:
     """
     Retrieves the docstring of a callable object (e.g., function) as a string.
 
-    This function uses the `inspect` module to obtain the documentation string (docstring) associated with the 
-    provided callable object. The docstring provides a description of the callable's purpose and usage, if present.
+    This function uses the `inspect` module to obtain 
+    the documentation string (docstring) associated with the 
+    provided callable object. The docstring 
+    provides a description of the callable's purpose and usage, if present.
 
     Args:
         func (Callable): The callable object (function) from which to retrieve the docstring.

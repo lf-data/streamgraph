@@ -1,10 +1,10 @@
-from .base import Layer, Node, Chain, IfNode, LoopNode, node, ifnode, loopnode
 import logging
-from colorama import init, Fore, Style
 import json
-from pythonjsonlogger import jsonlogger
 from uuid import uuid4
 from datetime import datetime, timezone
+from pythonjsonlogger import jsonlogger
+from colorama import init, Fore, Style
+from .base import Layer, Node, Chain, IfNode, LoopNode, node, ifnode, loopnode
 
 
 __author__ = 'Francesco Lorè'
@@ -19,8 +19,10 @@ class LogColors:
     """
     A class that defines color constants for logging messages.
 
-    This class provides a set of color constants using the `colorama` library, which can be used to colorize 
-    log messages in the terminal. The colors are defined using `colorama.Fore` and `colorama.Style` attributes.
+    This class provides a set of color constants using the 
+    `colorama` library, which can be used to colorize 
+    log messages in the terminal. The colors are defined using 
+    `colorama.Fore` and `colorama.Style` attributes.
 
     Attributes:
         OKCYAN (str): Color code for cyan text.
@@ -37,8 +39,10 @@ class LogColors:
         >>> print(LogColors.BOLD + "This is a bold message." + LogColors.ENDC)
 
     Notes:
-        - `Fore` and `Style` are part of the `colorama` library and are used to apply colors and styles to terminal output.
-        - The `ENDC` attribute is used to reset the text color back to the default after applying one of the color attributes.
+        - `Fore` and `Style` are part of the `colorama` library and 
+        are used to apply colors and styles to terminal output.
+        - The `ENDC` attribute is used to reset the text color back 
+        to the default after applying one of the color attributes.
     """
     OKCYAN = Fore.CYAN
     OKGRAY = Fore.LIGHTBLACK_EX
@@ -70,7 +74,8 @@ class ColoredJsonFormatter(jsonlogger.JsonFormatter):
             Checks if the given key is a private attribute.
         
         set_extra_keys(record, log_record, reserved):
-            Adds extra data from the log record to the final log output, filtering out reserved and private attributes.
+            Adds extra data from the log record to the final log output, 
+            filtering out reserved and private attributes.
         
         format(record):
             Formats the log record, applying color based on the log level.
@@ -90,8 +95,10 @@ class ColoredJsonFormatter(jsonlogger.JsonFormatter):
     
     Notes:
         - The `FORMATS` attribute maps logging levels to colors defined in the `LogColors` class.
-        - The `format` method is overridden to apply color formatting to the log message based on its severity.
-        - The `add_fields` method enriches the log record with additional fields like timestamp and trace ID.
+        - The `format` method is overridden to apply color formatting 
+        to the log message based on its severity.
+        - The `add_fields` method enriches the log record with 
+        additional fields like timestamp and trace ID.
     """
 
     FORMATS = {
@@ -101,16 +108,6 @@ class ColoredJsonFormatter(jsonlogger.JsonFormatter):
         logging.ERROR: LogColors.FAIL,
         logging.CRITICAL: LogColors.BOLD + LogColors.FAIL
     }
-
-    def __init__(self, *args, **kwargs):
-        """
-        Initializes the ColoredJsonFormatter and calls the parent class initializer.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Keyword arguments.
-        """
-        super().__init__(*args, **kwargs)
 
     def add_fields(self, log_record, record, message_dict):
         """
