@@ -7,7 +7,7 @@ from typing import Any, Optional, Union
 from functools import lru_cache
 from copy import deepcopy
 import requests
-from .utils import (_input_args, _is_positional_or_keyword, 
+from .utils import (_input_args, _is_positional_or_keyword,
                     _get_args, _get_docs, _id_counter, _deprecated_method)
 from .utils import Callable, List, Dict, Tuple, CSS_MERMAID
 
@@ -61,14 +61,15 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
         if isinstance(nodes, dict):
             node_to_reset = nodes[nodeid]
         else:
-            node_to_reset = nodeid       
+            node_to_reset = nodeid
+
         assert isinstance(node_to_reset, Base), "The items in 'nodes' must be Base instances"
         node_to_reset.id = node_to_reset.name + str(next(counter))
         if isinstance(node_to_reset, IfNode):
             node_to_reset.true_node = deepcopy(node_to_reset.true_node)
             node_to_reset.true_node.id = node_to_reset.true_node.name + str(next(counter))
             if hasattr(node_to_reset.true_node, "_nodes"):
-                node_to_reset.true_node._nodes = _reset_id(node_to_reset.true_node._nodes) 
+                node_to_reset.true_node._nodes = _reset_id(node_to_reset.true_node._nodes)
 
             node_to_reset.false_node = deepcopy(node_to_reset.false_node)
             node_to_reset.false_node.id = node_to_reset.false_node.name + str(next(counter))
@@ -353,16 +354,16 @@ def _convert_parallel_node(inputs: Union[List, Tuple, Dict, "Base"]) ->Any:
     """
     if isinstance(inputs, Base):
         return inputs
+
+    if isinstance(inputs, dict):
+        for key in inputs:
+            if isinstance(inputs[key], (list, tuple, dict)):
+                inputs[key] = _convert_parallel_node(inputs[key])
     else:
-        if isinstance(inputs, dict):
-            for key in inputs:
-                if isinstance(inputs[key], (list, tuple, dict)):
-                    inputs[key] = _convert_parallel_node(inputs[key])
-        else:
-            for x in inputs:
-                if isinstance(x, (list, tuple, dict)):
-                    x = _convert_parallel_node(x)
-        return Layer(inputs)
+        for x in inputs:
+            if isinstance(x, (list, tuple, dict)):
+                x = _convert_parallel_node(x)
+    return Layer(inputs)
 
 
 def node() -> "Node":
@@ -808,7 +809,7 @@ class Layer(Base):
             self.name = name
         else:
             self.name = "Layer"
-        self._is_dict = True if isinstance(nodes, dict) else False
+        self._is_dict = isinstance(nodes, dict)
         self.id = self.name + str(next(counter))
 
     def add_node(self, other, before: bool) ->'Chain':
@@ -852,7 +853,7 @@ class Layer(Base):
             res = {} if self._is_dict else []
             cpus = max([int(os.cpu_count()/2), 1])
 
-            def run_node(node_input, *args, **kwargs):
+            def run_node(node_input, args, kwargs):
                 return node_input(*args, **kwargs)
 
             with multiprocessing.pool.ThreadPool(cpus) as pool:
@@ -861,7 +862,7 @@ class Layer(Base):
                     nodes = list(self._nodes.values())
                     input_map = [(node, args, kwargs) for node in nodes]
                     output = pool.starmap(run_node, input_map)
-                    res = {y: x for y, x in zip(keys, output)}
+                    res = dict(zip(keys, output))
                 else:
                     input_map = [(node, args, kwargs) for node in self._nodes]
                     res = pool.starmap(run_node, input_map)
@@ -975,14 +976,15 @@ class Node(Base):
         """
         try:
             logger.info("Start Node", extra={"id": self.id, "name_class": self.name})
+
             if not self.positional_or_keyword:
                 logger.info("Select input args", extra={"id": self.id, "name_class": self.name})
                 inp_args = _input_args(args, kwargs, node_args=self.args)
                 logger.info("End Node", extra={"id": self.id, "name_class": self.name})
                 return self.func(**inp_args)
-            else:
-                logger.info("End Node", extra={"id": self.id, "name_class": self.name})
-                return self.func(*args, **kwargs)
+
+            logger.info("End Node", extra={"id": self.id, "name_class": self.name})
+            return self.func(*args, **kwargs)
         except Exception as e:
             logger.error(e, extra={"id": self.id, "name_class": self.name})
             raise
@@ -1071,7 +1073,8 @@ class IfNode(Node):
             **kwargs: Keyword arguments to pass to the function and nodes.
 
         Returns:
-            Any: The result of executing either the true_node or the false_node based on the function's boolean result.
+            Any: The result of executing either the true_node or the false_node 
+            based on the function's boolean result.
 
         Raises:
             AssertionError: If the function's output is not a boolean.
@@ -1188,8 +1191,8 @@ class LoopNode(Node):
             condition_met = False
 
             while not condition_met:
-                logger.info("Iteration %s", str(iteration), extra={"id": self.id, "name_class": self.name})
- 
+                logger.info("Iteration %s", str(iteration),
+                            extra={"id": self.id, "name_class": self.name})
                 if iteration == 0:
                     result = self.loop_node(*args, **kwargs)
                 else:

@@ -157,7 +157,7 @@ def _is_positional_or_keyword(func: Callable) ->bool:
     """
     sig = inspect.signature(func)
     for param in sig.parameters.values():
-        if param.kind == param.VAR_POSITIONAL or param.kind == param.VAR_KEYWORD:
+        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
             return True
     return False
 
