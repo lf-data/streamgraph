@@ -31,12 +31,16 @@ import warnings
 from functools import wraps
 import inspect
 
-CSS_MERMAID = "\n\nclassDef rectangle fill:#89CFF0,stroke:#003366,"
-"stroke-width:2px;\n"
-"classDef diamond fill:#98FB98,stroke:#2E8B57,stroke-width:2px,"
-"stroke-dasharray: 5;\n"
-"classDef diamond_loop fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,"
-"stroke-dasharray: 5;"
+R_CSS = "fill:#89CFF0,stroke:#003366,stroke-width:2px"
+D_CSS = "fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray:5"
+D_LOOP_CSS = "fill:#DDA0DD,stroke:#8A2BE2,stroke-width:2px,stroke-dasharray:5"
+
+CSS_MERMAID = F"""
+
+classDef rectangle {R_CSS};
+classDef diamond {D_CSS};
+classDef diamond_loop {D_LOOP_CSS};
+"""
 
 
 def _deprecated_method(msg):
