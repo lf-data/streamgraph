@@ -1,6 +1,9 @@
 name: Check Code Style with Black
 
 on:
+  push:
+    branches: 
+      - main
   pull_request:
     branches:
       - main
