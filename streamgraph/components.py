@@ -29,8 +29,6 @@ Utility Functions:
 
 import logging
 import json
-import os
-import multiprocessing.pool
 import base64
 from typing import Any, Optional, Union
 from functools import lru_cache
@@ -44,7 +42,17 @@ from .utils import (
     _id_counter,
     _deprecated_method,
 )
-from .utils import Callable, List, Dict, Tuple, CSS_MERMAID
+from .utils import (
+    Callable,
+    List,
+    Dict,
+    Tuple,
+    CSS_MERMAID,
+    NodeProcess,
+    multiprocessing,
+)
+
+MULTIPROCESS = False
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +118,7 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
                 node_to_reset.false_node._nodes = _reset_id(
                     node_to_reset.false_node._nodes
                 )
-        elif isinstance(node_to_reset, Base) and hasattr(
-            node_to_reset, "loop_node"
-        ):
+        elif isinstance(node_to_reset, Base) and hasattr(node_to_reset, "loop_node"):
             node_to_reset.loop_node = deepcopy(node_to_reset.loop_node)
             node_to_reset.loop_node.id = node_to_reset.loop_node.name + str(
                 next(counter)
@@ -172,9 +178,7 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
                 and hasattr(node_mermaid, "true_node")
                 and hasattr(node_mermaid, "false_node")
             ):
-                lines.append(
-                    f"{node_mermaid.id}" f"{{{node_mermaid.name}}}:::diamond;"
-                )
+                lines.append(f"{node_mermaid.id}" f"{{{node_mermaid.name}}}:::diamond;")
 
                 if hasattr(node_mermaid.true_node, "_nodes"):
                     true_nodes = node_mermaid.true_node._nodes
@@ -189,8 +193,8 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
                 first_node_true, lines_true, last_node_true = _create_mermaid(
                     true_nodes
                 )
-                first_node_false, lines_false, last_node_false = (
-                    _create_mermaid(false_nodes)
+                first_node_false, lines_false, last_node_false = _create_mermaid(
+                    false_nodes
                 )
 
                 for x in first_node_true:
@@ -220,9 +224,7 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
                     first_node = [node_mermaid]
 
                 last_node = last_node_false + last_node_true
-            elif isinstance(node_mermaid, Base) and hasattr(
-                node_mermaid, "loop_node"
-            ):
+            elif isinstance(node_mermaid, Base) and hasattr(node_mermaid, "loop_node"):
                 if hasattr(node_mermaid.loop_node, "_nodes"):
                     true_nodes = node_mermaid.loop_node._nodes
                 else:
@@ -252,18 +254,14 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
                     lines.append(f"{x.id} --> {node_mermaid.id};")
 
                 for x in first_node_loop:
-                    lines.append(
-                        f"{node_mermaid.id} " f"-. New Iteration .-> {x.id};"
-                    )
+                    lines.append(f"{node_mermaid.id} " f"-. New Iteration .-> {x.id};")
 
                 if first_node is None:
                     first_node = first_node_loop
 
                 last_node = [node_mermaid]
             else:
-                lines.append(
-                    f"{node_mermaid.id}" f"[{node_mermaid.name}]:::rectangle;"
-                )
+                lines.append(f"{node_mermaid.id}" f"[{node_mermaid.name}]:::rectangle;")
 
                 if first_node is None:
                     first_node = [node_mermaid]
@@ -436,9 +434,7 @@ class Base:
         Returns:
             Base: The new chain with the added node.
         """
-        raise NotImplementedError(
-            "This method should be implemented" "by subclasses"
-        )
+        raise NotImplementedError("This method should be implemented" "by subclasses")
 
     def __rshift__(self, other) -> "Base":
         """Add a node to the chain after the current node.
@@ -609,9 +605,7 @@ class Chain(Base):
             execution of any node in the chain.
         """
         try:
-            logger.info(
-                "Start Chain", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("Start Chain", extra={"id": self.id, "name_class": self.name})
             x = None
             for i, node_run in enumerate(self._nodes):
                 if i == 0:
@@ -623,12 +617,12 @@ class Chain(Base):
                         x = node_run(**x)
                     else:
                         x = node_run(x)
-            logger.info(
-                "End Chain", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("End Chain", extra={"id": self.id, "name_class": self.name})
             return x
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
+            logger.error(
+                e, exc_info=True, extra={"id": self.id, "name_class": self.name}
+            )
             raise
 
     @_deprecated_method(msg="This method is replace by 'save' method.")
@@ -648,16 +642,13 @@ class Chain(Base):
         graphbytes = mg.encode("utf8")
         base64_bytes = base64.urlsafe_b64encode(graphbytes)
         base64_string = base64_bytes.decode("ascii")
-        response = requests.get(
-            "https://mermaid.ink/img/" + base64_string, timeout=10
-        )
+        response = requests.get("https://mermaid.ink/img/" + base64_string, timeout=10)
         if response.status_code == 200:
             with open(path, "wb") as file:
                 file.write(response.content)
         else:
             print(
-                f"Failed to generate PNG image."
-                f"Status code: {response.status_code}"
+                f"Failed to generate PNG image." f"Status code: {response.status_code}"
             )
 
     def save(self, path: str, direction: str = "TB") -> None:
@@ -676,16 +667,13 @@ class Chain(Base):
         graphbytes = mg.encode("utf8")
         base64_bytes = base64.urlsafe_b64encode(graphbytes)
         base64_string = base64_bytes.decode("ascii")
-        response = requests.get(
-            "https://mermaid.ink/img/" + base64_string, timeout=10
-        )
+        response = requests.get("https://mermaid.ink/img/" + base64_string, timeout=10)
         if response.status_code == 200:
             with open(path, "wb") as file:
                 file.write(response.content)
         else:
             print(
-                f"Failed to generate PNG image. "
-                f"Status code: {response.status_code}"
+                f"Failed to generate PNG image. " f"Status code: {response.status_code}"
             )
 
     def show(self, direction: str = "TB") -> str:
@@ -852,31 +840,52 @@ class Layer(Base):
             the execution of any node in the layer.
         """
         try:
-            logger.info(
-                "Start Layer", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("Start Layer", extra={"id": self.id, "name_class": self.name})
             res = {} if self._is_dict else []
-            cpus = max([int(os.cpu_count() / 2), 1])
 
-            def run_node(node_input, args, kwargs):
-                return node_input(*args, **kwargs)
+            if MULTIPROCESS:
+                manager = multiprocessing.Manager() 
+                output = manager.list([None] * len(self._nodes))
 
-            with multiprocessing.pool.ThreadPool(cpus) as pool:
-                if self._is_dict:
-                    keys = list(self._nodes.keys())
-                    nodes = list(self._nodes.values())
-                    input_map = [(node, args, kwargs) for node in nodes]
-                    output = pool.starmap(run_node, input_map)
-                    res = dict(zip(keys, output))
+            if self._is_dict:
+                keys = list(self._nodes.keys())
+                nodes = list(self._nodes.values())
+                if not MULTIPROCESS:
+                    output = [node(*args, **kwargs) for node in nodes]
                 else:
-                    input_map = [(node, args, kwargs) for node in self._nodes]
-                    res = pool.starmap(run_node, input_map)
-            logger.info(
-                "End Layer", extra={"id": self.id, "name_class": self.name}
-            )
+                    processes_nodes = [
+                        NodeProcess(node, i, output, args, kwargs)
+                        for i, node in enumerate(nodes)
+                    ]
+                    for pnode in processes_nodes:
+                        pnode.start()
+
+                    for pnode in processes_nodes:
+                        pnode.join()
+
+                res = dict(zip(keys, list(output)))
+            else:
+                if not MULTIPROCESS:
+                    output = [node(*args, **kwargs) for node in self._nodes]
+                else:
+                    processes_nodes = [
+                        NodeProcess(node, i, output, args, kwargs)
+                        for i, node in enumerate(self._nodes)
+                    ]
+                    for pnode in processes_nodes:
+                        pnode.start()
+
+                    for pnode in processes_nodes:
+                        pnode.join()
+
+                res = list(output)
+
+            logger.debug("End Layer", extra={"id": self.id, "name_class": self.name})
             return res
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
+            logger.error(
+                e, exc_info=True, extra={"id": self.id, "name_class": self.name}
+            )
             raise
 
     def __repr__(self) -> str:
@@ -979,27 +988,23 @@ class Node(Base):
             Exception: If an error occurs during the function execution.
         """
         try:
-            logger.info(
-                "Start Node", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("Start Node", extra={"id": self.id, "name_class": self.name})
 
             if not self.positional_or_keyword:
-                logger.info(
+                logger.debug(
                     "Select input args",
                     extra={"id": self.id, "name_class": self.name},
                 )
                 inp_args = _input_args(args, kwargs, node_args=self.args)
-                logger.info(
-                    "End Node", extra={"id": self.id, "name_class": self.name}
-                )
+                logger.debug("End Node", extra={"id": self.id, "name_class": self.name})
                 return self.func(**inp_args)
 
-            logger.info(
-                "End Node", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("End Node", extra={"id": self.id, "name_class": self.name})
             return self.func(*args, **kwargs)
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
+            logger.error(
+                e, exc_info=True, extra={"id": self.id, "name_class": self.name}
+            )
             raise
 
     def __repr__(self) -> str:

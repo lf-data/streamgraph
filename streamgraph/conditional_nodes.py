@@ -142,15 +142,13 @@ class IfNode(Node):
             Exception: If an error occurs during the execution.
         """
         try:
-            logger.info(
-                "Start IfNode", extra={"id": self.id, "name_class": self.name}
-            )
-            logger.info(
+            logger.debug("Start IfNode", extra={"id": self.id, "name_class": self.name})
+            logger.debug(
                 "Get bool value",
                 extra={"id": self.id, "name_class": self.name},
             )
             if not self.positional_or_keyword:
-                logger.info(
+                logger.debug(
                     "Select input args",
                     extra={"id": self.id, "name_class": self.name},
                 )
@@ -165,21 +163,21 @@ class IfNode(Node):
                     res, bool
                 ), "The output of IfNode's function must be boolean"
 
-            logger.info(
+            logger.debug(
                 "Execute %s Node",
                 str(res),
                 extra={"id": self.id, "name_class": self.name},
             )
-            logger.info(
-                "End IfNode", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("End IfNode", extra={"id": self.id, "name_class": self.name})
             return (
                 self.true_node(*args, **kwargs)
                 if res
                 else self.false_node(*args, **kwargs)
             )
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
+            logger.error(
+                e, exc_info=True, extra={"id": self.id, "name_class": self.name}
+            )
             raise
 
 
@@ -257,7 +255,7 @@ class LoopNode(Node):
             of the loop node or the condition function.
         """
         try:
-            logger.info(
+            logger.debug(
                 "Start LoopNode",
                 extra={"id": self.id, "name_class": self.name},
             )
@@ -265,7 +263,7 @@ class LoopNode(Node):
             condition_met = False
 
             while not condition_met:
-                logger.info(
+                logger.debug(
                     "Iteration %s",
                     str(iteration),
                     extra={"id": self.id, "name_class": self.name},
@@ -288,11 +286,11 @@ class LoopNode(Node):
                     condition_met = self.func(result)
                 iteration += 1
 
-            logger.info(
-                "End LoopNode", extra={"id": self.id, "name_class": self.name}
-            )
+            logger.debug("End LoopNode", extra={"id": self.id, "name_class": self.name})
             return result
 
         except Exception as e:
-            logger.error(e, extra={"id": self.id, "name_class": self.name})
+            logger.error(
+                e, exc_info=True, extra={"id": self.id, "name_class": self.name}
+            )
             raise

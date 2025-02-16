@@ -60,7 +60,7 @@ __author__ = "Francesco Lorè"
 __email__ = "flore9819@gmail.com"
 __status__ = "Development"
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 init(autoreset=True)
 
@@ -230,7 +230,7 @@ logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 handler.setFormatter(ColoredJsonFormatter())
 logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 __all__ = [
@@ -242,5 +242,5 @@ __all__ = [
     "Chain",
     "IfNode",
     "LoopNode",
-    "logger",
+    "logger"
 ]

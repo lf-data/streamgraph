@@ -30,6 +30,9 @@ from typing import Callable, Tuple, List, Dict
 import warnings
 from functools import wraps
 import inspect
+import multiprocessing
+import dill
+
 
 R_CSS = "fill:#89CFF0,stroke:#003366,stroke-width:2px"
 D_CSS = "fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray:5"
@@ -123,9 +126,7 @@ def _input_args(args: Tuple, kwargs: Dict, node_args: List) -> Dict:
               as required by the node function.
     """
     output_args = {
-        node_args[node_args.index(kw)]: kwargs[kw]
-        for kw in kwargs
-        if kw in node_args
+        node_args[node_args.index(kw)]: kwargs[kw] for kw in kwargs if kw in node_args
     }
     if len(args) == 0:
         return output_args
@@ -213,3 +214,42 @@ def _get_docs(func: Callable) -> str:
         Returns `None` if no docstring is present.
     """
     return inspect.getdoc(func)
+
+
+class NodeProcess(multiprocessing.Process):
+    """
+    A multiprocessing-based process wrapper for executing
+    a serialized function (node) in parallel.
+
+    This class serializes the given function using `dill`
+    and executes it in a separate process.
+    The result is stored in a shared results list at the
+    specified index.
+
+    Args:
+        node (Callable): The function or callable object
+        to execute, serialized using `dill`.
+        index (int): The index in the results list where
+        the output should be stored.
+        results (multiprocessing.Manager().list): A shared
+        list to store results from parallel execution.
+        args (tuple): Positional arguments to pass to the function.
+        kwargs (dict): Keyword arguments to pass to the function.
+
+    Methods:
+        run(): Executes the serialized function with
+        the given arguments and stores the result.
+    """
+
+    def __init__(self, node, index, results, args, kwargs):
+        super().__init__()
+        self.node = dill.dumps(node)
+        self.index = index
+        self.results = results
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        """Executes the serialized function and stores the result in the shared results list."""
+        node = dill.loads(self.node)
+        self.results[self.index] = node(*self.args, **self.kwargs)
