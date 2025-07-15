@@ -50,6 +50,7 @@ from .utils import (
     NodeProcess,
     multiprocessing,
 )
+import asyncio
 
 MULTIPROCESS = False
 
@@ -613,31 +614,21 @@ class Chain(Base):
             )
             raise
 
-    @_deprecated_method(msg="This method is replace by 'save' method.")
-    def view(self, path: str, direction: str = "TB") -> None:
-        """Save a visual representation of the chain using Mermaid.
+    async def acall(self, *args, **kwargs) -> Any:
+        """Asynchronously execute the chain by sequentially calling each node.
 
         Args:
-            path (str): The file path where the PNG image will be saved.
-            direction (str): The direction of the flowchart
-            ('TB' for top-bottom, 'LR' for left-right).
+            *args: Positional arguments to pass to the first node.
+            **kwargs: Keyword arguments to pass to the first node.
+
+        Returns:
+            Any: The output of the last node in the chain.
 
         Raises:
-            Exception: If the image generation fails.
+            Exception: If an error occurs during the
+            execution of any node in the chain.
         """
-        mg = "\n".join(_create_mermaid(self._nodes)[1])
-        mg = f"flowchart {direction};\n" + mg + CSS_MERMAID
-        graphbytes = mg.encode("utf8")
-        base64_bytes = base64.urlsafe_b64encode(graphbytes)
-        base64_string = base64_bytes.decode("ascii")
-        response = requests.get("https://mermaid.ink/img/" + base64_string, timeout=10)
-        if response.status_code == 200:
-            with open(path, "wb") as file:
-                file.write(response.content)
-        else:
-            print(
-                f"Failed to generate PNG image." f"Status code: {response.status_code}"
-            )
+        return await asyncio.to_thread(self.__call__, *args, **kwargs)
 
     def save(self, path: str, direction: str = "TB") -> None:
         """Save a visual representation of the chain using Mermaid.
@@ -994,6 +985,22 @@ class Node(Base):
                 e, exc_info=True, extra={"id": self.id, "name_class": self.name}
             )
             raise
+
+    async def acall(self, *args, **kwargs) -> Any:
+        """Asynchronous call of the node's function.
+
+        This method allows the node's function to be called asynchronously,
+        enabling non-blocking execution in an event loop.
+
+        Args:
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
+        Returns:
+            Any: The result of the asynchronous function execution.
+        """
+        result = await asyncio.to_thread(self.__call__, *args, **kwargs)
+        return result
 
     def __repr__(self) -> str:
         """Return a string representation of the node.
