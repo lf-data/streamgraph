@@ -31,7 +31,6 @@ import logging
 import json
 import base64
 from typing import Any, Optional, Union
-from functools import lru_cache
 from copy import deepcopy
 import requests
 from .utils import (
@@ -57,8 +56,6 @@ MULTIPROCESS = False
 logger = logging.getLogger(__name__)
 
 counter = _id_counter()
-
-lru_cache(maxsize=2)
 
 
 def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
@@ -135,9 +132,6 @@ def _reset_id(nodes: Union[List, Dict, Tuple]) -> Union[List, Dict, Tuple]:
         else:
             nodeid = node_to_reset
     return nodes
-
-
-lru_cache(maxsize=2)
 
 
 def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
@@ -318,9 +312,6 @@ def _create_mermaid(nodes: Union[List, Tuple, Dict]) -> Tuple:
     return first_node, lines, last_node
 
 
-lru_cache(maxsize=2)
-
-
 def _check_input_node(inputs: Union[List, Tuple, Dict, "Base"]) -> None:
     """Validate that the input consists of `Base` instances.
 
@@ -348,9 +339,6 @@ def _check_input_node(inputs: Union[List, Tuple, Dict, "Base"]) -> None:
             raise TypeError(
                 'Only "Base", or lists of this class' "can be used as inputs"
             )
-
-
-lru_cache(maxsize=2)
 
 
 def _convert_parallel_node(inputs: Union[List, Tuple, Dict, "Base"]) -> Any:
@@ -844,7 +832,7 @@ class Layer(Base):
             res = {} if self._is_dict else []
 
             if MULTIPROCESS:
-                manager = multiprocessing.Manager() 
+                manager = multiprocessing.Manager()
                 output = manager.list([None] * len(self._nodes))
 
             if self._is_dict:
