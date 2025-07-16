@@ -1,12 +1,20 @@
-"""This module initializes logging functionality.
+"""This module initializes logging functionality and exposes core components for streamgraph.
 
 Classes:
     - LogColors: A class defining color constants for logging
       messages using `colorama`.
     - ColoredJsonFormatter: A custom JSON log formatter that outputs
       colorized log records based on their severity level.
+    - Layer: Represents a processing layer in a chain.
+    - Node: Represents a node in the processing graph.
+    - Chain: Represents a chain of nodes/layers.
+    - IfNode: Represents a conditional node for branching logic.
+    - LoopNode: Represents a node for loop/iteration logic.
 
 Functions:
+    - node: Decorator or factory for creating Node instances.
+    - ifnode: Decorator or factory for creating IfNode instances.
+    - loopnode: Decorator or factory for creating LoopNode instances.
     - add_fields(log_record, record, message_dict): Adds extra fields
       (e.g., timestamp, level, trace ID) to log records.
     - is_private_key(key): Checks if a log attribute is private
@@ -20,7 +28,7 @@ Attributes:
     - __author__: Author information.
     - __email__: Contact email of the author.
     - __status__: Current status of the project (Development).
-    - __version__: Module version (0.1.0).
+    - __version__: Module version (0.1.3).
     - DATE_FORMAT_TIMEZONE: A constant defining the
       datetime format used in logs.
     - logger: The logger object configured with a `ColoredJsonFormatter`
@@ -38,6 +46,8 @@ Usage:
     - Chain components (`Layer`, `Node`, `Chain`) and conditional
       nodes (`IfNode`, `LoopNode`) are made available for
       use in higher-level modules.
+    - Decorators (`node`, `ifnode`, `loopnode`) are provided for
+      convenient node creation.
 
 Notes:
     - The logging system can be extended or replaced

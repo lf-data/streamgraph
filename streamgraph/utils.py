@@ -12,26 +12,40 @@ Functions:
     - _get_args(func): Extracts and returns a list of argument names
         (including variadic args) from a callable function's signature.
     - _get_docs(func): Retrieves the docstring of a callable object.
+    - _start_background_loop(): Starts an asyncio event loop in a background thread.
+    - _ensure_background_loop(): Ensures a background event loop is running.
+    - _has_running_loop(): Checks if there is a running asyncio event loop.
+    - run_async(coro): Runs a coroutine from synchronous code, handling event loop context.
+    - ensure_event_loop(): Ensures an event loop is available and returns it.
 
 Variables:
     - CSS_MERMAID: A string containing CSS styles for visualizing
                    chains in Mermaid diagrams. It defines different
                    styles for representing nodes
                    (e.g., rectangle, diamond, loop) in visual flows.
+    - R_CSS, D_CSS, D_LOOP_CSS: CSS style strings for different node types.
+    - _loop, _loop_thread, _loop_ready: Internal variables for managing the background event loop.
 
 Usage:
     These utility functions are primarily used for
     inspecting and manipulating callable objects, handling
-    input arguments for nodes, and providing support
-    for deprecated methods and custom ID generation.
+    input arguments for nodes, providing support
+    for deprecated methods and custom ID generation,
+    and managing asyncio event loops in both synchronous and asynchronous contexts.
 """
 
 from typing import Callable, Tuple, List, Dict
 import warnings
 from functools import wraps
 import inspect
-import multiprocessing
-import dill
+import asyncio
+import threading
+
+# Event loop in background
+_loop = None
+_loop_thread = None
+_loop_ready = threading.Event()
+
 
 R_CSS = "fill:#89CFF0,stroke:#003366,stroke-width:2px"
 D_CSS = "fill:#98FB98,stroke:#2E8B57,stroke-width:2px,stroke-dasharray:5"
@@ -215,40 +229,52 @@ def _get_docs(func: Callable) -> str:
     return inspect.getdoc(func)
 
 
-class NodeProcess(multiprocessing.Process):
+def _start_background_loop():
+    global _loop
+    _loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(_loop)
+    _loop_ready.set()
+    _loop.run_forever()
+
+def _ensure_background_loop():
+    global _loop_thread
+    if _loop is None or not _loop_ready.is_set():
+        _loop_ready.clear()
+        _loop_thread = threading.Thread(target=_start_background_loop, daemon=True)
+        _loop_thread.start()
+        _loop_ready.wait()
+
+def _has_running_loop():
+    try:
+        asyncio.get_running_loop()
+        return True
+    except RuntimeError:
+        return False
+
+def run_async(coro):
     """
-    A multiprocessing-based process wrapper for executing
-    a serialized function (node) in parallel.
-
-    This class serializes the given function using `dill`
-    and executes it in a separate process.
-    The result is stored in a shared results list at the
-    specified index.
-
-    Args:
-        node (Callable): The function or callable object
-        to execute, serialized using `dill`.
-        index (int): The index in the results list where
-        the output should be stored.
-        results (multiprocessing.Manager().list): A shared
-        list to store results from parallel execution.
-        args (tuple): Positional arguments to pass to the function.
-        kwargs (dict): Keyword arguments to pass to the function.
-
-    Methods:
-        run(): Executes the serialized function with
-        the given arguments and stores the result.
+    Esegue una coroutine da codice sincrono.
+    
+    - Se già in un event loop (es. Jupyter, FastAPI), delega l'esecuzione a un loop di background.
+    - Se in contesto sincrono puro, crea un nuovo loop temporaneo.
     """
+    if _has_running_loop():
+        _ensure_background_loop()
+        future = asyncio.run_coroutine_threadsafe(coro, _loop)
+        return future.result()
+    else:
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
 
-    def __init__(self, node, index, results, args, kwargs):
-        super().__init__()
-        self.node = dill.dumps(node)
-        self.index = index
-        self.results = results
-        self.args = args
-        self.kwargs = kwargs
 
-    def run(self):
-        """Executes the serialized function and stores the result in the shared results list."""
-        node = dill.loads(self.node)
-        self.results[self.index] = node(*self.args, **self.kwargs)
+def ensure_event_loop():
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop
+    return asyncio.get_event_loop()

@@ -17,14 +17,18 @@ Decorators:
     @node: A decorator to create a Node from a function.
 
 Utility Functions:
-    _reset_id: Resets the unique IDs for all nodes in the chain.
+    _reset_id: Resets the unique IDs for all nodes and their nested structures.
     _create_mermaid: Generates a Mermaid-compatible code block
                      that represents the chain and its nodes as a
                      graphical flowchart.
     _check_input_node: Verifies that the input nodes or objects are
                        valid instances of the Base class.
-    _convert_paralle_node: Converts a list of Base-class objects into
+    _convert_parallel_node: Converts a list, tuple, or dict of Base-class objects into
                            a Layer object for parallel execution.
+
+Other:
+    PARALLEL: Global flag to control whether Layer nodes are executed in parallel (async) or sequentially.
+    counter: Internal counter for generating unique node IDs.
 """
 
 import logging
@@ -40,6 +44,8 @@ from .utils import (
     _get_docs,
     _id_counter,
     _deprecated_method,
+    ensure_event_loop,
+    run_async
 )
 from .utils import (
     Callable,
@@ -47,12 +53,9 @@ from .utils import (
     Dict,
     Tuple,
     CSS_MERMAID,
-    NodeProcess,
-    multiprocessing,
+    inspect
 )
 import asyncio
-
-MULTIPROCESS = False
 
 logger = logging.getLogger(__name__)
 
@@ -390,7 +393,7 @@ def node() -> "Node":
         and returns a `Node` instance.
     """
 
-    def run_node(func: Callable) -> Node:
+    def run_node(func: Callable) -> Node: # type: ignore
         return Node(func)
 
     return run_node
@@ -500,12 +503,18 @@ class Chain(Base):
             Executes the chain by sequentially calling each
             node with the provided arguments.
 
-        view(direction='TB', path=None):
-            Generates a visual representation of the chain using Mermaid and
-            saves it as a PNG image.
-
         __getitem__(index):
             Retrieves the node at the specified index.
+
+        acall(*args, **kwargs):
+            Asynchronously executes the chain by sequentially
+
+        save(path, direction='TB'):
+            Saves in PNG a visual representation of the chain using Mermaid
+
+        show(direction='TB'):
+            Generates a visual representation of the chain using Mermaid in 
+            format string.
 
         get_node_data():
             Extracts the data of each node in the chain.
@@ -721,7 +730,8 @@ class Chain(Base):
 
 
 class Layer(Base):
-    """A class representing a layer of nodes.
+    """
+    A class representing a layer of nodes.
 
     This class allows for grouping multiple nodes into a single layer
     that can be added to a chain.
@@ -744,9 +754,15 @@ class Layer(Base):
         add_node(other, before):
             Adds a node to the chain either before or after the current layer.
 
+        execute_nodes(nodes, *args, **kwargs):
+            Executes the nodes in the layer in parallel.
+
         __call__(*args, **kwargs):
             Executes the layer by running its nodes in
             parallel with the provided arguments.
+
+        acall(*args, **kwargs):
+            Asynchronously executes the layer.
 
         __repr__():
             Returns a string representation of the layer,
@@ -802,6 +818,27 @@ class Layer(Base):
             chain = Chain(nodes=[self, other])
         chain._nodes = _reset_id(chain._nodes)
         return chain
+    
+    def execute_nodes(self, nodes, *args, **kwargs) -> Any:
+        """
+        Executes the nodes in the layer either in parallel or sequentially.
+
+        Args:
+            nodes (Union[List[Base], Tuple[Base], Dict[str, Base]]): The nodes to execute in parallel or sequentially.
+            *args: Positional arguments to pass to each node.
+            **kwargs: Keyword arguments to pass to each node.
+
+        Returns:
+            Any: A list or dictionary with the output of each node, depending on the input structure.
+        """
+        coros = [node.acall(*args, **kwargs) for node in nodes]
+        try:
+            tasks = [asyncio.create_task(coro) for coro in coros]
+            return run_async(asyncio.gather(*tasks))
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop.run_until_complete(asyncio.gather(*coros))
 
     def __call__(self, *args, **kwargs) -> Any:
         """Execute the layer by running its nodes in parallel.
@@ -820,43 +857,17 @@ class Layer(Base):
         """
         try:
             logger.debug("Start Layer", extra={"id": self.id, "name_class": self.name})
-            res = {} if self._is_dict else []
-
-            if MULTIPROCESS:
-                manager = multiprocessing.Manager()
-                output = manager.list([None] * len(self._nodes))
-
             if self._is_dict:
                 keys = list(self._nodes.keys())
                 nodes = list(self._nodes.values())
-                if not MULTIPROCESS:
-                    output = [node(*args, **kwargs) for node in nodes]
-                else:
-                    processes_nodes = [
-                        NodeProcess(node, i, output, args, kwargs)
-                        for i, node in enumerate(nodes)
-                    ]
-                    for pnode in processes_nodes:
-                        pnode.start()
+            else:
+                nodes = self._nodes
+            
+            output = self.execute_nodes(nodes, *args, **kwargs)
 
-                    for pnode in processes_nodes:
-                        pnode.join()
-
+            if self._is_dict:
                 res = dict(zip(keys, list(output)))
             else:
-                if not MULTIPROCESS:
-                    output = [node(*args, **kwargs) for node in self._nodes]
-                else:
-                    processes_nodes = [
-                        NodeProcess(node, i, output, args, kwargs)
-                        for i, node in enumerate(self._nodes)
-                    ]
-                    for pnode in processes_nodes:
-                        pnode.start()
-
-                    for pnode in processes_nodes:
-                        pnode.join()
-
                 res = list(output)
 
             logger.debug("End Layer", extra={"id": self.id, "name_class": self.name})
@@ -866,6 +877,23 @@ class Layer(Base):
                 e, exc_info=True, extra={"id": self.id, "name_class": self.name}
             )
             raise
+
+    async def acall(self, *args, **kwargs) -> Any:
+        """
+        Asynchronously execute the layer.
+
+        Args:
+            *args: Positional arguments
+            **kwargs: Keyword arguments.
+
+        Returns:
+            Any: The output of the layer.
+
+        Raises:
+            Exception: If an error occurs during the
+            execution of any node in the layer.
+        """
+        return await asyncio.to_thread(self.__call__, *args, **kwargs)
 
     def __repr__(self) -> str:
         """Return a string representation of the layer.
@@ -901,9 +929,15 @@ class Node(Base):
         add_node(other, before):
             Adds a node to the chain either before or after the current node.
 
+        execute_func(*args, **kwargs):
+            Executes the function associated with the node.
+
         __call__(*args, **kwargs):
             Executes the function associated with the node
             with the provided arguments.
+
+        acall(*args, **kwargs):
+            Asynchronously executes the function associated with the node.
 
         __repr__():
             Returns a string representation of the node, including its
@@ -935,7 +969,8 @@ class Node(Base):
         self._node_type = "Node"
 
     def add_node(self, other, before: bool) -> "Chain":
-        """Add a node to the chain.
+        """
+        Add a node to the chain.
 
         Args:
             other (Base): The node to be added to the chain.
@@ -952,6 +987,25 @@ class Node(Base):
             chain = Chain(nodes=[self, other])
         chain._nodes = _reset_id(chain._nodes)
         return chain
+    
+    def execute_func(self, *args, **kwargs) -> Any:
+        """
+        Executes the function associated with the node, handling both synchronous and asynchronous functions.
+
+        If the associated function is a coroutine (asynchronous), it is executed using the run_async helper.
+        Otherwise, the function is called directly with the provided arguments.
+
+        Args:
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
+        Returns:
+            Any: The result of the executed function.
+        """
+        if inspect.iscoroutinefunction(self.func):
+            return run_async(self.func(*args, **kwargs))
+        else:
+            return self.func(*args, **kwargs)
 
     def __call__(self, *args, **kwargs) -> Any:
         """Execute the function associated with the node.
@@ -976,10 +1030,10 @@ class Node(Base):
                 )
                 inp_args = _input_args(args, kwargs, node_args=self.args)
                 logger.debug("End Node", extra={"id": self.id, "name_class": self.name})
-                return self.func(**inp_args)
+                return self.execute_func(**inp_args)
 
             logger.debug("End Node", extra={"id": self.id, "name_class": self.name})
-            return self.func(*args, **kwargs)
+            return self.execute_func(*args, **kwargs)
         except Exception as e:
             logger.error(
                 e, exc_info=True, extra={"id": self.id, "name_class": self.name}

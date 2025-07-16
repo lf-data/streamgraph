@@ -1,7 +1,7 @@
-"""This module defines specialized conditional node classes.
-
+"""This module defines specialized conditional node classes for use in
 the computational pipeline. These classes extend the base
-`Node` class from the base module.
+`Node` class from the base module and provide mechanisms for
+conditional branching and iterative execution within a node-based workflow.
 
 Classes:
     IfNode: A specialized type of Node that adds conditional logic.
@@ -12,14 +12,21 @@ Classes:
               It iterates over the `loop_node` for
               a specified number of times or until a condition is met.
 
-Decorators:
-    @ifnode: A decorator that allows a function to be wrapped in an IfNode.
-             It accepts a condition, a `true_node`,
-             and a `false_node` for conditional execution within a chain.
+Decorators/Factory Functions:
+    ifnode: A factory function (can be used as a decorator) that allows a function to be wrapped in an IfNode.
+            It accepts a condition, a `true_node`,
+            and a `false_node` for conditional execution within a chain.
 
-    @loopnode: A decorator that allows a function to be wrapped in a LoopNode.
-               It accepts a `loop_node` for
-               repeated execution and loop iteration logic.
+    loopnode: A factory function (can be used as a decorator) that allows a function to be wrapped in a LoopNode.
+              It accepts a `loop_node` for
+              repeated execution and loop iteration logic.
+
+Functions:
+    ifnode(true_node: Base, false_node: Base) -> IfNode:
+        Returns a function that wraps a callable into an IfNode with the specified true and false branches.
+
+    loopnode(loop_node: Base) -> LoopNode:
+        Returns a function that wraps a callable into a LoopNode with the specified loop body.
 
 This module is designed to extend the basic pipeline
 structure with conditional and looping nodes, making
@@ -87,10 +94,6 @@ class IfNode(Node):
         __call__(*args, **kwargs):
             Executes the conditional logic by evaluating the function
             and executing the appropriate node.
-
-        __repr__():
-            Returns a string representation of the if node, including
-            its ID, arguments, name, and description.
     """
 
     def __init__(self, func: Callable, true_node: Base, false_node: Base):
@@ -153,12 +156,12 @@ class IfNode(Node):
                     extra={"id": self.id, "name_class": self.name},
                 )
                 inp_args = _input_args(args, kwargs, node_args=self.args)
-                res = self.func(**inp_args)
+                res = self.execute_func(**inp_args)
                 assert isinstance(
                     res, bool
                 ), "The output of IfNode's function must be boolean"
             else:
-                res = self.func(*args, **kwargs)
+                res = self.execute_func(*args, **kwargs)
                 assert isinstance(
                     res, bool
                 ), "The output of IfNode's function must be boolean"
@@ -205,10 +208,6 @@ class LoopNode(Node):
         __call__(*args, **kwargs):
             Executes the loop node repeatedly until the condition
             function returns True.
-
-        __repr__():
-            Returns a string representation of the loop node,
-            including its ID and name.
     """
 
     def __init__(self, condition_func: Callable, loop_node: Base) -> None:
@@ -279,11 +278,11 @@ class LoopNode(Node):
                         result = self.loop_node(result)
 
                 if isinstance(result, (list, tuple)):
-                    condition_met = self.func(*result)
+                    condition_met = self.execute_func(*result)
                 elif isinstance(result, dict):
-                    condition_met = self.func(**result)
+                    condition_met = self.execute_func(**result)
                 else:
-                    condition_met = self.func(result)
+                    condition_met = self.execute_func(result)
                 iteration += 1
 
             logger.debug("End LoopNode", extra={"id": self.id, "name_class": self.name})
